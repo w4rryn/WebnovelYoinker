@@ -1,2 +1,2 @@
 # WebnovelYoinker
-Downloads converts webnovels to Epub or PDF
+Downloads and converts webnovels to Epub or PDF
