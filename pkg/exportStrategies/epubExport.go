@@ -1,9 +1,9 @@
 package exportstrategies
 
 import (
-	"bytes"
 	"fmt"
-	"text/template"
+	"html"
+	"strings"
 
 	"github.com/bmaupin/go-epub"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
@@ -11,6 +11,7 @@ import (
 
 //EpubExporter exports a volume a epub
 type EpubExporter struct {
+	Callback func(s string)
 }
 
 //Export exports a valume as epub
@@ -25,29 +26,38 @@ func (e *EpubExporter) Export(volume *yoinker.Volume) error {
 	epubExport.SetLang(volume.Language)
 
 	for i, chapter := range volume.Chapters {
-		var localImages []string
-		for _, imageURL := range chapter.Images {
-			epubImage, err := epubExport.AddImage(imageURL, "")
-			if err != nil {
-				return err
-			}
-			localImages = append(localImages, epubImage)
-		}
-		chapter.Images = localImages
 		chapterName := fmt.Sprintf("Chapter %d", i+1)
-		chapterTemplate := template.New("Template_1")
-		chapterTemplate, _ = chapterTemplate.Parse(chapter.Content)
-		var stringBuffer bytes.Buffer
-		err := chapterTemplate.Execute(&stringBuffer, chapter)
-		if err != nil {
-			return err
+		var parsedContent strings.Builder
+		for _, paragraph := range chapter.Content {
+			switch paragraph.(type) {
+			case *yoinker.PageImage:
+				pageImage := paragraph.(*yoinker.PageImage)
+				imagePath, err := epubExport.AddImage(pageImage.Image, "")
+				e.checkError(err)
+				content := fmt.Sprintf("<p style=\"page-break-before: always\"><img src=\"%v\" width=\"%v\" height=\"%v\"/></p>", imagePath, pageImage.Width, pageImage.Height)
+				parsedContent.WriteString(content)
+			case *yoinker.Paragraph:
+				par := paragraph.(*yoinker.Paragraph)
+				var content string
+				if par.Content == "" {
+					content = "<p> </p>"
+				} else {
+					content = fmt.Sprintf("<p>%v</p>", html.EscapeString(par.Content))
+				}
+				parsedContent.WriteString(content)
+			}
 		}
-		fmt.Println(stringBuffer.String())
-		epubExport.AddSection(stringBuffer.String(), chapterName, "", "")
+		epubExport.AddSection(parsedContent.String(), chapterName, "", "")
 	}
-	err = epubExport.Write(volume.Title)
+	err = epubExport.Write(volume.Title + ".epub")
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (e EpubExporter) checkError(err error) {
+	if err != nil {
+		e.Callback(err.Error())
+	}
 }
