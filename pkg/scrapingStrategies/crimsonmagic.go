@@ -18,20 +18,9 @@ type CrimsonmagicNovelScraper struct {
 	chapterUrls []string
 }
 
-//SetMetadata sets the metadata of the volume
-func (c *CrimsonmagicNovelScraper) SetMetadata(author, coverURL, language, title, year string) {
-	c.volume = yoinker.Volume{
-		Author:   author,
-		Cover:    coverURL,
-		Language: language,
-		Title:    title,
-		Year:     year,
-	}
-}
-
 //BeginScrape Scrapes all chapters
-func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string) (*yoinker.Volume, error) {
-
+func (c *CrimsonmagicNovelScraper) BeginScrape(metadata yoinker.BookMetadata, chapterURLs []string) (*yoinker.Volume, error) {
+	c.volume.Metadata = metadata
 	c.chapterUrls = chapterURLs
 	chapters, err := c.getChapters()
 	c.volume.Chapters = chapters
@@ -60,7 +49,7 @@ func (c *CrimsonmagicNovelScraper) getChapters() ([]yoinker.Chapter, error) {
 		chapter := c.getChapter(root)
 		chapters = append(chapters, chapter)
 	}
-	return chapters, nil
+	return chapters, nil //TODO pass this to channel
 }
 
 func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yoinker.Chapter {

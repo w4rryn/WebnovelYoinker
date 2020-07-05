@@ -2,12 +2,8 @@ package yoinker
 
 // Volume represents a book that consists of chapters
 type Volume struct {
-	Cover    string    `json:"cover"`
-	Chapters []Chapter `json:"chapters"`
-	Author   string    `json:"author"`
-	Year     string    `json:"year"`
-	Language string    `json:"language"`
-	Title    string    `json:"title"`
+	Chapters []Chapter    `json:"chapters"`
+	Metadata BookMetadata `json:"metadata"`
 }
 
 // Chapter represents a chapter in a book.

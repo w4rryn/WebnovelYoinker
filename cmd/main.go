@@ -50,21 +50,13 @@ func main() {
 		},
 	}
 
-	//TODO just use give taht shit a volume object, or a volume request object
-	//TODO avoid this global state for metafata because its no good for concurrency
-	// yoink.Scraper.SetMetadata("yuNS",
-	// 	"https://crimsonmagicme.files.wordpress.com/2018/08/cover1.jpg",
-	// 	"English",
-	// 	"I Shaved Then I Brought a High School Girl Home Volume 1",
-	// 	"2018")
-
-	yoink.Scraper.SetMetadata("yuNS",
-		"https://i.imgur.com/eLIkho2.png",
-		"English",
-		"Konosuba Volume 1",
-		"2018")
-
-	scrapeVolume1, err := yoink.Scraper.BeginScrape(konosuba)
+	scrapeVolume1, err := yoink.Scraper.BeginScrape(yoinker.BookMetadata{
+		Author:   "Natsume Akatsuki",
+		Cover:    "https://i.imgur.com/eLIkho2.png",
+		Language: "English",
+		Title:    "Konosuba Volume 1",
+		Year:     "2013",
+	}, konosuba)
 	if err != nil {
 		panic(err)
 	}
@@ -74,12 +66,3 @@ func main() {
 func statusCallback(s string) {
 	fmt.Println(s)
 }
-
-// c.volume = yoinker.Volume{
-// 	Chapters: getChapters(chapterURLs, callback),
-// 	Author:   "yuNS",
-// 	Cover:    "https://crimsonmagicme.files.wordpress.com/2018/08/cover1.jpg",
-// 	Language: "English",
-// 	Title:    "I Shaved. Then I Brought a High School Girl Home. Volume 1",
-// 	Year:     "2018",
-// }
