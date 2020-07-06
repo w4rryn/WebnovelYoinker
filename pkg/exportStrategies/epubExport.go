@@ -26,26 +26,10 @@ func (e *EpubExporter) Export(volume *yoinker.Volume) error {
 	e.epubExport.SetAuthor(volume.Metadata.Author)
 	e.epubExport.SetLang(volume.Metadata.Language)
 
-	// for i, chapter := range volume.Chapters {
-	// 	chapterName := fmt.Sprintf("Chapter %d", i+1)
-	// 	var parsedContent strings.Builder
-	// 	for _, paragraph := range chapter.Content {
-	// 		switch paragraph.(type) {
-	// 		case *yoinker.PageImage:
-	// 			pageImage := paragraph.(*yoinker.PageImage)
-	// 			imagePath, err := e.epubExport.AddImage(pageImage.Image, "")
-	// 			e.checkError(err)
-	// 			content := fmt.Sprintf("<p style=\"page-break-before: always\"><img src=\"%v\" width=\"%v\" height=\"%v\"/></p>", imagePath, pageImage.Width, pageImage.Height)
-	// 			parsedContent.WriteString(content)
+	for i, chapter := range volume.Chapters {
+		e.AddChapter(chapter, i)
+	}
 
-	// 		case *yoinker.Paragraph:
-	// 			par := paragraph.(*yoinker.Paragraph)
-	// 			content := fmt.Sprintf("<p>%v</p>", html.EscapeString(par.Content))
-	// 			parsedContent.WriteString(content)
-	// 		}
-	// 	}
-	// e.epubExport.AddSection(parsedContent.String(), chapterName, "", "")
-	// }
 	err = e.epubExport.Write(volume.Metadata.Title + ".epub")
 	if err != nil {
 		return err
@@ -59,8 +43,8 @@ func (e EpubExporter) checkError(err error) {
 	}
 }
 
-func (e *EpubExporter) AddChapter(chapter yoinker.Chapter) {
-	// chapterName := fmt.Sprintf("Chapter %d", i)
+func (e *EpubExporter) AddChapter(chapter yoinker.Chapter, i int) {
+	chapterName := fmt.Sprintf("Chapter %d", i)
 	var parsedContent strings.Builder
 	for _, paragraph := range chapter.Content {
 		switch paragraph.(type) {
@@ -77,6 +61,5 @@ func (e *EpubExporter) AddChapter(chapter yoinker.Chapter) {
 			parsedContent.WriteString(content)
 		}
 	}
-	// e.epubExport.AddSection(parsedContent.String(), chapterName, "", "")
-	e.epubExport.AddSection(parsedContent.String(), "", "", "")
+	e.epubExport.AddSection(parsedContent.String(), chapterName, "", "")
 }

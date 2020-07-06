@@ -41,6 +41,7 @@ func main() {
 		"https://www.crimsonmagic.me/archive/gifting-1-4/",
 		"https://www.crimsonmagic.me/archive/gifting-1-e/",
 	}
+
 	yoink := yoinker.WebnovelYoinker{
 		Exporter: &export.EpubExporter{
 			Callback: statusCallback,
@@ -60,6 +61,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
 	yoink.Exporter.Export(scrapeVolume1)
 }
 
