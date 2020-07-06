@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"strings"
+	"sync"
 
 	"github.com/bmaupin/go-epub"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
@@ -16,25 +17,36 @@ type EpubExporter struct {
 }
 
 //Export exports a valume as epub
-func (e *EpubExporter) Export(volume *yoinker.Volume) error {
-	e.epubExport = epub.NewEpub(volume.Metadata.Title)
-	coverImage, err := e.epubExport.AddImage(volume.Metadata.Cover, "")
-	if err != nil {
-		return err
+func (e *EpubExporter) Export(metadata yoinker.BookMetadata, path string, chapterChannel <-chan yoinker.Chapter) string {
+	e.epubExport = epub.NewEpub(metadata.Title)
+	var coverImage string
+	var waiter sync.WaitGroup
+	go func() {
+		waiter.Add(1)
+		var err error
+		coverImage, err = e.epubExport.AddImage(metadata.Cover, "")
+		if err != nil {
+			panic(err)
+		}
+		waiter.Done()
+	}()
+
+	i := 0
+	for chapter := range chapterChannel {
+		i++
+		e.epubExport.AddSection(e.addChapter(chapter), fmt.Sprintf("Chapter %d", i), "", "")
 	}
+
+	waiter.Wait()
 	e.epubExport.SetCover(coverImage, "")
-	e.epubExport.SetAuthor(volume.Metadata.Author)
-	e.epubExport.SetLang(volume.Metadata.Language)
-
-	for i, chapter := range volume.Chapters {
-		e.AddChapter(chapter, i)
-	}
-
-	err = e.epubExport.Write(volume.Metadata.Title + ".epub")
+	e.epubExport.SetAuthor(metadata.Author)
+	e.epubExport.SetLang(metadata.Language)
+	exportPath := metadata.Title + ".epub"
+	err := e.epubExport.Write(exportPath)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	return nil
+	return exportPath
 }
 
 func (e EpubExporter) checkError(err error) {
@@ -43,8 +55,7 @@ func (e EpubExporter) checkError(err error) {
 	}
 }
 
-func (e *EpubExporter) AddChapter(chapter yoinker.Chapter, i int) {
-	chapterName := fmt.Sprintf("Chapter %d", i)
+func (e *EpubExporter) addChapter(chapter yoinker.Chapter) string {
 	var parsedContent strings.Builder
 	for _, paragraph := range chapter.Content {
 		switch paragraph.(type) {
@@ -61,5 +72,5 @@ func (e *EpubExporter) AddChapter(chapter yoinker.Chapter, i int) {
 			parsedContent.WriteString(content)
 		}
 	}
-	e.epubExport.AddSection(parsedContent.String(), chapterName, "", "")
+	return parsedContent.String()
 }

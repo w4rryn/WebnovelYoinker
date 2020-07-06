@@ -2,5 +2,5 @@ package yoinker
 
 //ExportStrategy interface to provide document export functionality
 type ExportStrategy interface {
-	Export(volume *Volume) error
+	Export(metadata BookMetadata, path string, chapter <-chan Chapter) string
 }
