@@ -18,49 +18,24 @@ type CrimsonmagicNovelScraper struct {
 	chapterUrls []string
 }
 
-//SetMetadata sets the metadata of the volume
-func (c *CrimsonmagicNovelScraper) SetMetadata(author, coverURL, language, title, year string) {
-	c.volume = yoinker.Volume{
-		Author:   author,
-		Cover:    coverURL,
-		Language: language,
-		Title:    title,
-		Year:     year,
-	}
-}
-
 //BeginScrape Scrapes all chapters
-func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string) (*yoinker.Volume, error) {
-
-	c.chapterUrls = chapterURLs
-	chapters, err := c.getChapters()
-	c.volume.Chapters = chapters
-	if err != nil {
-		return nil, err
-	}
-	return &c.volume, nil
-}
-
-//TODO some images are missing
-func (c *CrimsonmagicNovelScraper) getChapters() ([]yoinker.Chapter, error) {
-	var chapters []yoinker.Chapter
-	for chapNum, chapterURL := range c.chapterUrls {
+func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- yoinker.Chapter) {
+	for chapNum, chapterURL := range chapterURLs {
 		if c.Callback != nil {
 			c.Callback(fmt.Sprintf("Scraping chapter: %v. URL: %v", chapNum, chapterURL))
 		}
-
 		resp, err := http.Get(chapterURL)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 		root, err := html.Parse(resp.Body)
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
-		chapter := c.getChapter(root)
-		chapters = append(chapters, chapter)
+		chapterChannel <- c.getChapter(root)
 	}
-	return chapters, nil
+
+	close(chapterChannel)
 }
 
 func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yoinker.Chapter {
@@ -91,8 +66,4 @@ func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yoinker.Chapter {
 		}
 	}
 	return chapter
-}
-
-func (c CrimsonmagicNovelScraper) callback(s string) {
-
 }
