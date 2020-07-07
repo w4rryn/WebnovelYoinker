@@ -38,6 +38,9 @@ func (e *EpubExporter) Export(metadata yoinker.BookMetadata, path string, chapte
 	i := 0
 	for chapter := range chapterChannel {
 		i++
+		if chapter.ChapterName == "" {
+			chapter.ChapterName = fmt.Sprintf("Chapter %v", i)
+		}
 		e.makeCallback(fmt.Sprintf("Adding chapter %v of %v.", chapter.ChapterName, metadata.Title))
 		e.epubExport.AddSection(e.addChapter(chapter), chapter.ChapterName, "", cssPath)
 	}
