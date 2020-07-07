@@ -8,8 +8,9 @@ type Volume struct {
 
 // Chapter represents a chapter in a book.
 type Chapter struct {
-	Images  []string     `json:"images"`
-	Content []PageObject `json:"content"`
+	ChapterName string       `json:"chapterName"`
+	Images      []string     `json:"images"`
+	Content     []PageObject `json:"content"`
 }
 
 var pageImageID uint
