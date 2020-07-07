@@ -1,0 +1,299 @@
+.calibre {
+    display: block;
+    font-size: 1em;
+    line-height: 1.2em;
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0 5pt
+}
+
+.calibre1 {
+    display: inline;
+    height: auto;
+    page-break-inside: avoid;
+    width: 100%;
+    margin: 0;
+    padding: 0
+}
+
+.calibre2 {
+    display: block;
+    font-size: 1.66667em;
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 2em 0 1em
+}
+
+.calibre3 {
+    display: list-item;
+    font-size: 1em
+}
+
+.calibre4 {
+    display: inline;
+    height: auto;
+    max-height: 100%;
+    max-width: 100%;
+    page-break-inside: avoid;
+    width: auto
+}
+
+.calibre5 {
+    display: block;
+    text-indent: 20pt;
+    margin: 0
+}
+
+.calibre6 {
+    font-style: italic
+}
+
+.calibre7 {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    display: block;
+    font-size: 1em;
+    padding-left: 0;
+    padding-right: 0;
+    text-align: center;
+    margin: 0 5pt
+}
+
+.calibre8 {
+    display: block;
+    text-align: center;
+    margin: 2em 0
+}
+
+.calibre9 {
+    display: block;
+    font-size: 1em;
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0 5pt
+}
+
+.calibre10 {
+    height: auto;
+    width: auto
+}
+
+.center {
+    -webkit-hyphens: none;
+    display: block;
+    font-size: 1.125em;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: center;
+    margin: 1em 0
+}
+
+.center1 {
+    display: block;
+    text-align: center;
+    margin: 0
+}
+
+.chapter-number {
+    display: block;
+    font-family: sans-serif;
+    font-size: 1.66667em;
+    font-weight: bold;
+    line-height: 1.2em;
+    text-align: right;
+    text-indent: 0;
+    margin: 10% 0 2em
+}
+
+.copyright {
+    display: block;
+    font-size: 1em;
+    text-align: left;
+    text-indent: 0;
+    margin: 0
+}
+
+.copyright-space {
+    display: block;
+    font-size: 1em;
+    text-align: left;
+    text-indent: 0;
+    margin: 1em 0 0
+}
+
+.copyright-title {
+    display: block;
+    font-size: 1.125em;
+    font-weight: normal;
+    line-height: 1.2em;
+    text-align: center;
+    text-indent: 0;
+    margin: 10% 0 2em
+}
+
+.galley-rw {
+    display: block;
+    font-family: serif;
+    font-size: 1em;
+    font-weight: normal;
+    letter-spacing: 0;
+    line-height: 1.2em;
+    orphans: 1;
+    text-align: justify;
+    widows: 1;
+    word-spacing: 0;
+    margin: 0;
+    padding: 0
+}
+
+.hidden-tag {
+    display: none;
+    visibility: hidden
+}
+
+.image_full {
+    clear: both;
+    display: block;
+    height: 95%;
+    page-break-inside: avoid;
+    text-align: center;
+    margin: 0 auto;
+    padding: 0
+}
+
+.noindent {
+    display: block;
+    text-indent: 0;
+    margin: 0
+}
+
+.none {
+    display: block;
+    list-style-type: none;
+    margin-bottom: 0;
+    margin-right: 0;
+    margin-top: 0;
+    padding-bottom: 0;
+    padding-right: 0;
+    padding-top: 0
+}
+
+.pc {
+    display: block;
+    text-align: center;
+    text-indent: 0;
+    margin: 0;
+    padding: 0.5em 0
+}
+
+.signupbutton {
+    -webkit-box-shadow: 0 0 5px #aaa inset;
+    background: rgb(106, 115, 123);
+    border-radius: 5px;
+    font-family: Helvetica;
+    font-size: 1.125em;
+    height: 40px;
+    line-height: 1.2;
+    text-decoration: none;
+    width: 160px;
+    padding: 8px 24px;
+    border: #444 solid 1px
+}
+
+.signuplink {
+    color: white;
+    text-decoration: none
+}
+
+.small-caps {
+    font-size: 0.75em
+}
+
+.space-break {
+    display: block;
+    text-indent: 0;
+    margin: 1.5em 0 0
+}
+
+.space-break1 {
+    display: block;
+    text-indent: 20pt;
+    margin: 1.5em 0 0
+}
+
+.specials-rw {
+    display: block;
+    font-size: 1em;
+    font-weight: normal;
+    line-height: 1.2em;
+    padding-bottom: 2em;
+    padding-top: 2em;
+    text-align: left
+}
+
+.toc-chapter {
+    display: list-item;
+    font-size: 1em;
+    font-weight: normal;
+    margin-bottom: 6pt;
+    margin-top: 6pt;
+    text-align: left;
+    text-indent: 1em
+}
+
+.toc-chapter1 {
+    display: list-item;
+    font-size: 1em;
+    margin-bottom: 6pt;
+    margin-top: 16pt;
+    text-align: left;
+    text-indent: 0
+}
+
+.toc-front {
+    display: list-item;
+    font-size: 1em;
+    margin-bottom: 6pt;
+    margin-top: 6pt;
+    text-align: left;
+    text-indent: 0
+}
+
+.toc-part {
+    display: list-item;
+    font-size: 1em;
+    font-weight: bold;
+    margin-bottom: 6pt;
+    margin-top: 16pt;
+    text-align: left;
+    text-indent: 0
+}
+
+.toc-title {
+    display: block;
+    font-size: 1.66667em;
+    font-weight: bold;
+    line-height: 1.2;
+    text-align: center;
+    text-indent: 0;
+    margin: 10% 0 2em
+}
+
+.width {
+    display: block
+}
+
+.width1 {
+    display: block;
+    page-break-inside: avoid;
+    width: 89%;
+    margin: 0 5%
+}
+
+.pcalibre:hover {
+    -webkit-box-shadow: 0 0 15px #555 inset
+}
+
+.pcalibre1:active {
+    -webkit-box-shadow: 0 0 15px #555 inset;
+    background: #555
+}

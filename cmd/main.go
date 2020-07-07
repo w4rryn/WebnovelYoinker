@@ -80,14 +80,14 @@ func main() {
 func newYoinker() *yoinker.WebnovelYoinker {
 	return &yoinker.WebnovelYoinker{
 		Exporter: &export.EpubExporter{
-			Callback: statusCallback,
+			PrintCallback: printCallback,
 		},
 		Scraper: &scraping.CrimsonmagicNovelScraper{
-			Callback: statusCallback,
+			PrintCallback: printCallback,
 		},
 	}
 }
 
-func statusCallback(s string) {
+func printCallback(s string) {
 	fmt.Println(s)
 }

@@ -13,24 +13,22 @@ import (
 
 // CrimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
 type CrimsonmagicNovelScraper struct {
-	Callback    func(s string)
-	volume      yoinker.Volume
-	chapterUrls []string
+	volume        yoinker.Volume
+	chapterUrls   []string
+	PrintCallback func(s string)
 }
 
 //BeginScrape Scrapes all chapters
 func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- yoinker.Chapter) {
-	for chapNum, chapterURL := range chapterURLs {
-		if c.Callback != nil {
-			c.Callback(fmt.Sprintf("Scraping chapter: %v. URL: %v", chapNum, chapterURL))
-		}
+	for _, chapterURL := range chapterURLs {
+		c.makeCallback(fmt.Sprintf("Downloading chapter: %v", chapterURL))
 		resp, err := http.Get(chapterURL)
 		if err != nil {
-			panic(err)
+			c.makeCallback(err.Error())
 		}
 		root, err := html.Parse(resp.Body)
 		if err != nil {
-			panic(err)
+			c.makeCallback(err.Error())
 		}
 		chapterChannel <- c.getChapter(root)
 	}
@@ -44,26 +42,44 @@ func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yoinker.Chapter {
 	paragraphMatcher := scrape.ByTag(atom.P)
 	class, _ := scrape.Find(root, mainContentMatcher)
 	imageNumber := 0
-
+	var chapterNameFound bool
 	for _, par := range scrape.FindAll(class, paragraphMatcher) {
 		imageFilter := scrape.ByTag(atom.Img)
 		if img, ok := scrape.Find(par, imageFilter); ok {
-			width, err := strconv.ParseInt(scrape.Attr(img, "width"), 0, 64)
+			widthAtr := scrape.Attr(img, "width")
+			width, err := strconv.ParseInt(widthAtr, 0, 64)
 			if err != nil {
-				c.Callback(err.Error())
+				width = 1127
 			}
-			height, err := strconv.ParseInt(scrape.Attr(img, "height"), 0, 64)
+			heightAttr := scrape.Attr(img, "height")
+			height, err := strconv.ParseInt(heightAttr, 0, 64)
 			if err != nil {
-				c.Callback(err.Error())
+				height = 1600
 			}
-			pageImage := yoinker.NewPageImage(int(width), int(height), scrape.Attr(img, "data-src"))
+			pageImage := yoinker.NewPageImage(int(height), int(width), scrape.Attr(img, "data-src"))
 			chapter.Images = append(chapter.Images, pageImage.Image)
 			chapter.Content = append(chapter.Content, pageImage)
 			imageNumber++
 			continue
 		} else {
+			spanMatcher := scrape.ByTag(atom.Span)
+			if span, ok := scrape.Find(par, spanMatcher); ok && scrape.Attr(span, "style") == "color:#ffffff;" {
+				continue
+			}
+			strongMatcher := scrape.ByTag(atom.Strong)
+			if chapterName, ok := scrape.Find(par, strongMatcher); ok && !chapterNameFound {
+				chapterNameFound = true
+				chapter.ChapterName = scrape.Text(chapterName)
+				continue
+			}
 			chapter.Content = append(chapter.Content, yoinker.NewParagraph(scrape.Text(par)))
 		}
 	}
 	return chapter
+}
+
+func (c CrimsonmagicNovelScraper) makeCallback(s string) {
+	if c.PrintCallback != nil {
+		c.PrintCallback(s)
+	}
 }
