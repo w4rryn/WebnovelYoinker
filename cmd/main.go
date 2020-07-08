@@ -13,13 +13,10 @@ import (
 func main() {
 	jobChannel := make(chan yc.BookMetadata, 100)
 	resultChannel := make(chan string, 100)
-	workerLimit := 3
-
-	for i := 0; i < workerLimit; i++ {
-		go worker(jobChannel, resultChannel)
-	}
 
 	jobs := getBookConfigs()
+	startScrapeWorkerPool(3, jobChannel, resultChannel)
+
 	for _, metadata := range jobs {
 		jobChannel <- metadata
 	}
@@ -29,6 +26,12 @@ func main() {
 		fmt.Printf("Finished scraping %v\n", result)
 	}
 	close(resultChannel)
+}
+
+func startScrapeWorkerPool(numberOfWorkers int, jobChannel chan yc.BookMetadata, resultChannel chan string) {
+	for i := 0; i < numberOfWorkers; i++ {
+		go worker(jobChannel, resultChannel)
+	}
 }
 
 func worker(jobs <-chan yc.BookMetadata, results chan<- string) {
