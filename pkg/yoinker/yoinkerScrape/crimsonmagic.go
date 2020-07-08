@@ -1,11 +1,11 @@
-package scrapingstrategies
+package yoinkerscrape
 
 import (
 	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
+	yc "github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/yoinkerCore"
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -18,7 +18,7 @@ type CrimsonmagicNovelScraper struct {
 }
 
 //BeginScrape Scrapes all chapters
-func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- yoinker.Chapter) {
+func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- yc.Chapter) {
 	for _, chapterURL := range chapterURLs {
 		c.makeCallback(fmt.Sprintf("Downloading chapter: %v", chapterURL))
 		resp, err := http.Get(chapterURL)
@@ -35,8 +35,8 @@ func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChan
 	close(chapterChannel)
 }
 
-func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yoinker.Chapter {
-	var chapter yoinker.Chapter
+func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yc.Chapter {
+	var chapter yc.Chapter
 	mainContentMatcher := scrape.ByClass("entry-content")
 	paragraphMatcher := scrape.ByTag(atom.P)
 	class, _ := scrape.Find(root, mainContentMatcher)
@@ -55,7 +55,7 @@ func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yoinker.Chapter {
 			if err != nil {
 				height = 1600
 			}
-			pageImage := yoinker.NewPageImage(int(height), int(width), scrape.Attr(img, "data-src"))
+			pageImage := yc.NewPageImage(int(height), int(width), scrape.Attr(img, "data-src"))
 			chapter.Images = append(chapter.Images, pageImage.Image)
 			chapter.Content = append(chapter.Content, pageImage)
 			imageNumber++
@@ -76,7 +76,7 @@ func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yoinker.Chapter {
 				chapter.ChapterName = scrape.Text(chapterName)
 				continue
 			}
-			chapter.Content = append(chapter.Content, yoinker.NewParagraph(scrape.Text(par)))
+			chapter.Content = append(chapter.Content, yc.NewParagraph(scrape.Text(par)))
 		}
 	}
 	return chapter

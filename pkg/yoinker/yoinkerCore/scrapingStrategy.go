@@ -1,4 +1,4 @@
-package yoinker
+package yc
 
 //ScrapingStrategy defines an interface to scrape from an arbitrary website
 type ScrapingStrategy interface {
