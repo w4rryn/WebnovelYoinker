@@ -1,4 +1,4 @@
-package yoinker
+package yc
 
 //ExportStrategy interface to provide document export functionality
 type ExportStrategy interface {

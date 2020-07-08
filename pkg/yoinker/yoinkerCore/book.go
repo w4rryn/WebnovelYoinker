@@ -1,4 +1,4 @@
-package yoinker
+package yc
 
 // Volume represents a book that consists of chapters
 type Volume struct {
