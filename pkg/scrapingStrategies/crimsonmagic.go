@@ -13,7 +13,6 @@ import (
 
 // CrimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
 type CrimsonmagicNovelScraper struct {
-	volume        yoinker.Volume
 	chapterUrls   []string
 	PrintCallback func(s string)
 }
@@ -67,7 +66,12 @@ func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yoinker.Chapter {
 				continue
 			}
 			strongMatcher := scrape.ByTag(atom.Strong)
+			boldMatcher := scrape.ByTag(atom.B)
 			if chapterName, ok := scrape.Find(par, strongMatcher); ok && !chapterNameFound {
+				chapterNameFound = true
+				chapter.ChapterName = scrape.Text(chapterName)
+				continue
+			} else if chapterName, ok := scrape.Find(par, boldMatcher); ok && !chapterNameFound {
 				chapterNameFound = true
 				chapter.ChapterName = scrape.Text(chapterName)
 				continue
