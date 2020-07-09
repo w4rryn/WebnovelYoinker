@@ -88,9 +88,3 @@ func (e *EpubExporter) addChapter(chapter yc.Chapter) string {
 	}
 	return parsedContent.String()
 }
-
-// func (e EpubExporter) makeCallback(s string) {
-// 	if e.PrintCallback != nil {
-// 		e.PrintCallback(s)
-// 	}
-// }
