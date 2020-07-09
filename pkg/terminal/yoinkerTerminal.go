@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
-	yc "github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/yoinkerCore"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 )
@@ -49,7 +48,7 @@ func StartTerminal() {
 }
 
 func scrapeCommand(c *cli.Context) error {
-	jobChannel := make(chan yc.BookMetadata, 100)
+	jobChannel := make(chan yoinker.BookMetadata, 100)
 	resultChannel := make(chan string, 100)
 
 	jobs := getBookConfigs(c.String("in"))
@@ -75,8 +74,8 @@ func logErr(err error) {
 	}
 }
 
-func getBookConfigs(path string) []yc.BookMetadata {
-	books := []yc.BookMetadata{}
+func getBookConfigs(path string) []yoinker.BookMetadata {
+	books := []yoinker.BookMetadata{}
 	rawBooks, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatalf("%v: %v", err.Error(), err)
