@@ -1,24 +1,23 @@
-package yoinkerscrape
+package yoinker
 
 import (
 	"fmt"
 	"net/http"
 	"strconv"
 
-	yc "github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/yoinkerCore"
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
 
-// CrimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
-type CrimsonmagicNovelScraper struct {
+// crimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
+type crimsonmagicNovelScraper struct {
 	chapterUrls   []string
 	PrintCallback func(s string)
 }
 
 //BeginScrape Scrapes all chapters
-func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- yc.Chapter) {
+func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- chapter) {
 	for _, chapterURL := range chapterURLs {
 		c.makeCallback(fmt.Sprintf("Downloading chapter: %v", chapterURL))
 		resp, err := http.Get(chapterURL)
@@ -35,8 +34,8 @@ func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChan
 	close(chapterChannel)
 }
 
-func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yc.Chapter {
-	var chapter yc.Chapter
+func (c crimsonmagicNovelScraper) getChapter(root *html.Node) chapter {
+	var chapter chapter
 	mainContentMatcher := scrape.ByClass("entry-content")
 	paragraphMatcher := scrape.ByTag(atom.P)
 	class, _ := scrape.Find(root, mainContentMatcher)
@@ -55,7 +54,7 @@ func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yc.Chapter {
 			if err != nil {
 				height = 1600
 			}
-			pageImage := yc.NewPageImage(int(height), int(width), scrape.Attr(img, "data-src"))
+			pageImage := newPageImage(int(height), int(width), scrape.Attr(img, "data-src"))
 			chapter.Images = append(chapter.Images, pageImage.Image)
 			chapter.Content = append(chapter.Content, pageImage)
 			imageNumber++
@@ -76,13 +75,13 @@ func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) yc.Chapter {
 				chapter.ChapterName = scrape.Text(chapterName)
 				continue
 			}
-			chapter.Content = append(chapter.Content, yc.NewParagraph(scrape.Text(par)))
+			chapter.Content = append(chapter.Content, newParagraph(scrape.Text(par)))
 		}
 	}
 	return chapter
 }
 
-func (c CrimsonmagicNovelScraper) makeCallback(s string) {
+func (c crimsonmagicNovelScraper) makeCallback(s string) {
 	if c.PrintCallback != nil {
 		c.PrintCallback(s)
 	}

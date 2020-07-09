@@ -1,22 +1,22 @@
-package yc
+package yoinker
 
-// Volume represents a book that consists of chapters
-type Volume struct {
-	Chapters []Chapter    `json:"chapters"`
+// volume represents a book that consists of chapters
+type volume struct {
+	Chapters []chapter    `json:"chapters"`
 	Metadata BookMetadata `json:"metadata"`
 }
 
 // Chapter represents a chapter in a book.
-type Chapter struct {
+type chapter struct {
 	ChapterName string       `json:"chapterName"`
 	Images      []string     `json:"images"`
-	Content     []PageObject `json:"content"`
+	Content     []pageObject `json:"content"`
 }
 
 var pageImageID uint
 
 //PageImage is used to store an image on a page
-type PageImage struct {
+type pageImage struct {
 	ID     uint   `json:"id"`
 	Image  string `json:"image"`
 	Width  int    `json:"width"`
@@ -24,7 +24,7 @@ type PageImage struct {
 }
 
 //GetID gets the ID of the current instance
-func (p *PageImage) GetID() uint {
+func (p *pageImage) GetID() uint {
 	if p.ID <= 0 {
 		pageImageID++
 		p.ID = pageImageID
@@ -33,9 +33,9 @@ func (p *PageImage) GetID() uint {
 	return p.ID
 }
 
-//NewPageImage creates a new page
-func NewPageImage(height int, width int, imagePath string) *PageImage {
-	return &PageImage{
+//newPageImage creates a new page
+func newPageImage(height int, width int, imagePath string) *pageImage {
+	return &pageImage{
 		Height: height,
 		Image:  imagePath,
 		Width:  width,
@@ -45,13 +45,13 @@ func NewPageImage(height int, width int, imagePath string) *PageImage {
 var paragraphID uint
 
 //Paragraph represents a paragraph in a chapter
-type Paragraph struct {
+type paragraph struct {
 	ID      uint   `json:"id"`
 	Content string `json:"content"`
 }
 
 //GetID gets the id of the current paragraph
-func (p *Paragraph) GetID() uint {
+func (p *paragraph) GetID() uint {
 	if p.ID <= 0 {
 		paragraphID++
 		p.ID = paragraphID
@@ -61,13 +61,13 @@ func (p *Paragraph) GetID() uint {
 }
 
 //NewParagraph creates a new paragraph
-func NewParagraph(content string) *Paragraph {
-	return &Paragraph{
+func newParagraph(content string) *paragraph {
+	return &paragraph{
 		Content: content,
 	}
 }
 
 //PageObject is an arbitary object on a page
-type PageObject interface {
+type pageObject interface {
 	GetID() uint
 }

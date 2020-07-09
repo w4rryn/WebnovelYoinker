@@ -1,4 +1,4 @@
-package yc
+package yoinker
 
 //BookMetadata stores metadata for books
 type BookMetadata struct {
