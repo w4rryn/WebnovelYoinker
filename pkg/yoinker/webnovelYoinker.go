@@ -1,14 +1,5 @@
 package yoinker
 
-//MessageCallback prints messages to main thread
-var MessageCallback func(s string)
-
-func consoleLog(s string) {
-	if MessageCallback != nil {
-		MessageCallback(s)
-	}
-}
-
 //WebnovelYoinker scrapes webnovels and webtoons and exports them as epub or pdf
 type WebnovelYoinker struct {
 	callback func(s string)

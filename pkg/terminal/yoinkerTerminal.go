@@ -55,13 +55,17 @@ func scrapeCommand(c *cli.Context) error {
 	fmt.Println("Starting conversion.")
 	fmt.Println("Status:")
 	jobs := getBookConfigs(c.String("in"))
-	bar := progressbar.Default(int64(len(jobs)))
-	workerPool := yoinker.YoinkWorkerPool{
-		ScrapeFinishedEvent: func(s string) {
-			bar.Add(1)
-		},
+	numOfJobs := len(jobs)
+	bar := progressbar.Default(int64(numOfJobs) * 2)
+	addBarStep := func(s string) {
+		bar.Add(1)
 	}
+	yoinker.OnScrapeStart = append(yoinker.OnScrapeStart, addBarStep)
+	yoinker.OnExportFinished = append(yoinker.OnExportFinished, addBarStep)
+
+	workerPool := yoinker.NewScrapeWorkerpool()
 	workerPool.BeginMultiConvert(jobs, c.Int("r"), c.String("out"))
+	fmt.Println("Finished")
 	return nil
 }
 
