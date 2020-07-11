@@ -4,7 +4,8 @@ go 1.14
 
 require (
 	github.com/bmaupin/go-epub v0.5.3
-	github.com/rakyll/statik v0.1.7
+	github.com/rakyll/statik v0.1.7 // indirect
+	github.com/schollz/progressbar/v3 v3.3.4
 	github.com/urfave/cli v1.22.4 // indirect
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/yhat/scrape v0.0.0-20161128144610-24b7890b0945

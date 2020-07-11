@@ -1,11 +1,13 @@
 package terminal
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
+	"github.com/schollz/progressbar/v3"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 )
@@ -50,8 +52,16 @@ func StartTerminal() {
 }
 
 func scrapeCommand(c *cli.Context) error {
+	fmt.Println("Starting conversion.")
+	fmt.Println("Status:")
 	jobs := getBookConfigs(c.String("in"))
-	yoinker.BeginMultiConvert(jobs, c.Int("r"), c.String("out"))
+	bar := progressbar.Default(int64(len(jobs)))
+	workerPool := yoinker.YoinkWorkerPool{
+		ScrapeFinishedEvent: func(s string) {
+			bar.Add(1)
+		},
+	}
+	workerPool.BeginMultiConvert(jobs, c.Int("r"), c.String("out"))
 	return nil
 }
 
