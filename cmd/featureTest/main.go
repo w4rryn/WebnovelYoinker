@@ -16,7 +16,7 @@ func main() {
 	jobs := getBookConfigs()
 	var workerPool yoinker.WorkerPoolYoinker
 	workerPool = &yoinker.PoolYoinker{}
-	workerPool.StartScrapeWorkerPool(3, jobChannel, resultChannel)
+	workerPool.StartScrapeWorkerPool(3, jobChannel, resultChannel, "~/Downloads/books")
 
 	for _, metadata := range jobs {
 		jobChannel <- metadata

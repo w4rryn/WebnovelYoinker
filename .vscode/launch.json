@@ -5,13 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch",
+            "name": "FeatureTest",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/featureTest/main.go"
+        },
+        {
+            "name": "Terminal",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/featureTest/main.go",
+            "program": "${workspaceFolder}/cmd/terminal/goyoinker.go",
             "env": {},
-            "args": []
+            "args": ["scrape", "-in", "/home/uuhg/Downloads/exports.yaml", "-out", "/home/uuhg/Downloads/books", "-r", "3"]
         }
     ]
 }

@@ -8,8 +8,8 @@ type WebnovelYoinker struct {
 }
 
 // StartYoink start yoinking the specified book
-func (y *WebnovelYoinker) StartYoink(metadata BookMetadata) {
+func (y *WebnovelYoinker) StartYoink(metadata BookMetadata, path string) {
 	chapterChannel := make(chan chapter, 5)
 	go y.Scraper[metadata.WebsiteURL].BeginScrape(metadata.ChapterURLs, chapterChannel)
-	y.Exporter[metadata.Format].Export(metadata, "", chapterChannel)
+	y.Exporter[metadata.Format].Export(metadata, path, chapterChannel)
 }

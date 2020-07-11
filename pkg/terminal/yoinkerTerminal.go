@@ -18,19 +18,22 @@ func StartTerminal() {
 	app.Usage = "Lets you download webnovels and exports them as epub or pdf"
 
 	scrapeFlags := []cli.Flag{
-		&cli.StringFlag{
+		&cli.PathFlag{
 			Name:     "in",
 			Value:    "~/",
 			Required: true,
 		},
-		&cli.StringFlag{
+		&cli.PathFlag{
 			Name:     "out",
 			Value:    "~/Downloads",
 			Required: true,
 		},
-		&cli.StringFlag{
-			Name:  "format",
-			Usage: "Set the export format, must be epub or pdf",
+
+		&cli.IntFlag{
+			Name:        "r",
+			Usage:       "Sets the number of go routines used to scrape, aka how many should be downloaded simultaenously",
+			DefaultText: "3",
+			Value:       3,
 		},
 	}
 
@@ -53,7 +56,8 @@ func scrapeCommand(c *cli.Context) error {
 
 	jobs := getBookConfigs(c.String("in"))
 	var workerPool yoinker.WorkerPoolYoinker
-	workerPool.StartScrapeWorkerPool(3, jobChannel, resultChannel)
+	workerPool = &yoinker.PoolYoinker{}
+	workerPool.StartScrapeWorkerPool(c.Int("r"), jobChannel, resultChannel, c.String("out"))
 
 	for _, metadata := range jobs {
 		jobChannel <- metadata
