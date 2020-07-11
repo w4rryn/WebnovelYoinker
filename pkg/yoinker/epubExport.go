@@ -3,6 +3,8 @@ package yoinker
 import (
 	"fmt"
 	"html"
+	"log"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -18,9 +20,9 @@ type epubExporter struct {
 //Export exports a valume as epub
 func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel <-chan chapter) string {
 	e.epubExport = epub.NewEpub(metadata.Title)
-	cssPath, err := e.epubExport.AddCSS("../assets/ebookstyle.css", "stylesheet.css")
+	cssPath, err := e.epubExport.AddCSS("https://raw.githubusercontent.com/lethal-bacon0/WebnovelYoinker/master/assets/ebookstyle.css", "stylesheet.css")
 	if err != nil {
-		// e.PrintCallback(err.Error())
+		log.Fatal(err)
 	}
 	var coverImage string
 	var waiter sync.WaitGroup
@@ -29,7 +31,7 @@ func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel
 		var err error
 		coverImage, err = e.epubExport.AddImage(metadata.Cover, "")
 		if err != nil {
-			// e.makeCallback(err.Error())
+			log.Fatal(err)
 		}
 		waiter.Done()
 	}()
@@ -48,13 +50,14 @@ func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel
 	e.epubExport.SetCover(coverImage, "")
 	e.epubExport.SetAuthor(metadata.Author)
 	e.epubExport.SetLang(metadata.Language)
-	// e.PrintCallback(fmt.Sprintf("Exporting %v", metadata.Title))
-	exportPath := metadata.Title + ".epub"
+	exportPath := filepath.Join(path, metadata.Title+".epub")
+	if err != nil {
+		log.Fatal(err)
+	}
 	err = e.epubExport.Write(exportPath)
 	if err != nil {
-		// e.makeCallback(err.Error())
+		log.Fatal(err)
 	}
-	// e.PrintCallback(fmt.Sprintf("Finished exporting %v", metadata.Title))
 	return exportPath
 }
 

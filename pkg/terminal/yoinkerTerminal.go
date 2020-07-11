@@ -1,7 +1,6 @@
 package terminal
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,19 +17,22 @@ func StartTerminal() {
 	app.Usage = "Lets you download webnovels and exports them as epub or pdf"
 
 	scrapeFlags := []cli.Flag{
-		&cli.StringFlag{
+		&cli.PathFlag{
 			Name:     "in",
 			Value:    "~/",
 			Required: true,
 		},
-		&cli.StringFlag{
+		&cli.PathFlag{
 			Name:     "out",
 			Value:    "~/Downloads",
 			Required: true,
 		},
-		&cli.StringFlag{
-			Name:  "format",
-			Usage: "Set the export format, must be epub or pdf",
+
+		&cli.IntFlag{
+			Name:        "r",
+			Usage:       "Sets the number of go routines used to scrape, aka how many should be downloaded simultaenously",
+			DefaultText: "3",
+			Value:       3,
 		},
 	}
 
@@ -48,23 +50,8 @@ func StartTerminal() {
 }
 
 func scrapeCommand(c *cli.Context) error {
-	jobChannel := make(chan yoinker.BookMetadata, 100)
-	resultChannel := make(chan string, 100)
-
 	jobs := getBookConfigs(c.String("in"))
-	var workerPool yoinker.WorkerPoolYoinker
-	workerPool.StartScrapeWorkerPool(3, jobChannel, resultChannel)
-
-	for _, metadata := range jobs {
-		jobChannel <- metadata
-	}
-	close(jobChannel)
-	for range jobs {
-		result := <-resultChannel
-		fmt.Printf("Finished scraping %v\n", result)
-	}
-	close(resultChannel)
-
+	yoinker.BeginMultiConvert(jobs, c.Int("r"), c.String("out"))
 	return nil
 }
 
