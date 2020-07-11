@@ -1,44 +1,59 @@
-package yoinker
+package scrape
 
 import (
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/events"
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
 
-// crimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
-type crimsonmagicNovelScraper struct {
+// CrimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
+type CrimsonmagicNovelScraper struct {
 	chapterUrls   []string
 	PrintCallback func(s string)
 }
 
 //BeginScrape Scrapes all chapters
-func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- chapter) {
+func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- book.Chapter) {
 	chapterStrings := strings.Join(chapterURLs, ",")
-	invokeYoinkerScrapeEvent(OnScrapeStart, chapterStrings)
 	for _, chapterURL := range chapterURLs {
 		resp, err := http.Get(chapterURL)
 		if err != nil {
-			invokeError(err)
+			go func() {
+				events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
+					Error: err,
+				})
+			}()
 		}
 		root, err := html.Parse(resp.Body)
 		if err != nil {
-			invokeError(err)
+			go func() {
+				events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
+					Error: err,
+				})
+			}()
 		}
 		chapter := c.getChapter(root)
 		chapterChannel <- chapter
 	}
 
-	invokeYoinkerScrapeEvent(OnChapterScraped, chapterStrings)
+	// invokeYoinkerScrapeEvent(OnChapterScrapedEvent, chapterStrings)
+	go func() {
+		events.OnVolumeScrapedEvent.Invoke(&yoinker.CtxYoink{
+			ChapterURL: chapterStrings,
+		})
+	}()
 	close(chapterChannel)
 }
 
-func (c crimsonmagicNovelScraper) getChapter(root *html.Node) chapter {
-	var chapter chapter
+func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) book.Chapter {
+	var chapter book.Chapter
 	mainContentMatcher := scrape.ByClass("entry-content")
 	paragraphMatcher := scrape.ByTag(atom.P)
 	class, _ := scrape.Find(root, mainContentMatcher)
@@ -57,7 +72,7 @@ func (c crimsonmagicNovelScraper) getChapter(root *html.Node) chapter {
 			if err != nil {
 				height = 1600
 			}
-			pageImage := newPageImage(int(height), int(width), scrape.Attr(img, "data-src"))
+			pageImage := book.NewPageImage(int(height), int(width), scrape.Attr(img, "data-src"))
 			chapter.Images = append(chapter.Images, pageImage.Image)
 			chapter.Content = append(chapter.Content, pageImage)
 			imageNumber++
@@ -78,7 +93,7 @@ func (c crimsonmagicNovelScraper) getChapter(root *html.Node) chapter {
 				chapter.ChapterName = scrape.Text(chapterName)
 				continue
 			}
-			chapter.Content = append(chapter.Content, newParagraph(scrape.Text(par)))
+			chapter.Content = append(chapter.Content, book.NewParagraph(scrape.Text(par)))
 		}
 	}
 	return chapter

@@ -1,6 +1,8 @@
 package yoinker
 
+import "github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
+
 //YoinkManager Provides Functionality to yoink Webnovels and Webtoons
 type YoinkManager interface {
-	StartYoink(metadata BookMetadata, exportPath string)
+	StartYoink(metadata book.Metadata, exportPath string)
 }

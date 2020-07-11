@@ -1,5 +1,7 @@
 package yoinker
 
+import "github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
+
 //WebnovelYoinker scrapes webnovels and webtoons and exports them as epub or pdf
 type WebnovelYoinker struct {
 	callback func(s string)
@@ -8,8 +10,8 @@ type WebnovelYoinker struct {
 }
 
 // StartYoink start yoinking the specified book
-func (y *WebnovelYoinker) StartYoink(metadata BookMetadata, path string) {
-	chapterChannel := make(chan chapter, 5)
+func (y *WebnovelYoinker) StartYoink(metadata book.Metadata, path string) {
+	chapterChannel := make(chan book.Chapter, 5)
 	go y.Scraper[metadata.WebsiteURL].BeginScrape(metadata.ChapterURLs, chapterChannel)
 	y.Exporter[metadata.Format].Export(metadata, path, chapterChannel)
 }
