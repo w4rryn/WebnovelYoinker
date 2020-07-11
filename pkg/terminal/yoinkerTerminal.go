@@ -7,6 +7,9 @@ import (
 	"os"
 
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/events"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/worker"
 	"github.com/schollz/progressbar/v3"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -48,36 +51,39 @@ func StartTerminal() {
 	}
 
 	err := app.Run(os.Args)
-	logErr(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func scrapeCommand(c *cli.Context) error {
-	yoinker.OnError = append(yoinker.OnError, logErr)
+
+	events.OnErrorEvent.Add(logErr)
 	fmt.Println("Starting conversion.")
 	fmt.Println("Status:")
 	jobs := getBookConfigs(c.String("in"))
 	numOfJobs := len(jobs)
 	bar := progressbar.Default(int64(numOfJobs) * 2)
-	addBarStep := func(s string) {
+	addBarStep := func(c *yoinker.CtxYoink) {
 		bar.Add(1)
 	}
-	yoinker.OnScrapeStart = append(yoinker.OnScrapeStart, addBarStep)
-	yoinker.OnExportFinished = append(yoinker.OnExportFinished, addBarStep)
+	events.OnExportFinishedEvent.Add(addBarStep)
+	events.OnVolumeScrapedEvent.Add(addBarStep)
 
-	workerPool := yoinker.NewScrapeWorkerpool()
+	workerPool := worker.NewScrapeWorkerpool()
 	workerPool.BeginMultiConvert(jobs, c.Int("r"), c.String("out"))
 	fmt.Println("Finished")
 	return nil
 }
 
-func logErr(err error) {
-	if err != nil {
-		fmt.Println(err.Error())
+func logErr(y *yoinker.CtxYoink) {
+	if y.Error != nil {
+		fmt.Println(y.Error.Error())
 	}
 }
 
-func getBookConfigs(path string) []yoinker.BookMetadata {
-	books := []yoinker.BookMetadata{}
+func getBookConfigs(path string) []book.Metadata {
+	books := []book.Metadata{}
 	rawBooks, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatalf("%v: %v", err.Error(), err)

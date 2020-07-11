@@ -1,7 +1,7 @@
-package yoinker
+package book
 
-//BookMetadata stores metadata for books
-type BookMetadata struct {
+//Metadata stores metadata for books
+type Metadata struct {
 	WebsiteURL  string   `json:"website" yaml:"Website"`
 	Title       string   `json:"title" yaml:"Title"`
 	Author      string   `json:"author" yaml:"Author"`

@@ -1,4 +1,4 @@
-package yoinker
+package export
 
 import (
 	"fmt"
@@ -9,21 +9,27 @@ import (
 	"sync"
 
 	"github.com/bmaupin/go-epub"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/events"
 )
 
-//epubExporter exports a volume a epub
-type epubExporter struct {
+//EpubExporter exports a volume a epub
+type EpubExporter struct {
 	epubExport *epub.Epub
-	// PrintCallback func(s string)
 }
 
 //Export exports a valume as epub
-func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel <-chan chapter) string {
-	invokeYoinkerScrapeEvent(OnExportStart, metadata.Title)
+func (e *EpubExporter) Export(metadata book.Metadata, path string, chapterChannel <-chan book.Chapter) string {
+	go func() {
+		events.OnExportStartEvent.Invoke(&yoinker.CtxYoink{
+			VolumeTitle: metadata.Title,
+		})
+	}()
 	e.epubExport = epub.NewEpub(metadata.Title)
 	cssPath, err := e.epubExport.AddCSS("https://raw.githubusercontent.com/lethal-bacon0/WebnovelYoinker/master/assets/ebookstyle.css", "stylesheet.css")
 	if err != nil {
-		invokeError(err)
+		// invokeError(err)
 	}
 	var coverImage string
 	var waiter sync.WaitGroup
@@ -32,7 +38,7 @@ func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel
 		var err error
 		coverImage, err = e.epubExport.AddImage(metadata.Cover, "")
 		if err != nil {
-			invokeError(err)
+			// invokeError(err)
 		}
 		waiter.Done()
 	}()
@@ -58,17 +64,21 @@ func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel
 	if err != nil {
 		log.Fatal(err)
 	}
-	invokeYoinkerScrapeEvent(OnExportFinished, metadata.Title)
+	go func() {
+		events.OnExportFinishedEvent.Invoke(&yoinker.CtxYoink{
+			VolumeTitle: metadata.Title,
+		})
+	}()
 	return exportPath
 }
 
-func (e *epubExporter) addChapter(chapter chapter) string {
+func (e *EpubExporter) addChapter(chapter book.Chapter) string {
 	var parsedContent strings.Builder
 	parsedContent.WriteString(fmt.Sprintf("<p><strong> %v </strong></p>", chapter.ChapterName))
 	for _, page := range chapter.Content {
 		switch page.(type) {
-		case *pageImage:
-			pageImage := page.(*pageImage)
+		case *book.PageImage:
+			pageImage := page.(*book.PageImage)
 			imagePath, err := e.epubExport.AddImage(pageImage.Image, "")
 			if err != nil {
 				// e.makeCallback(err.Error())
@@ -83,8 +93,8 @@ func (e *epubExporter) addChapter(chapter chapter) string {
 				imagePath, pageImage.Width, pageImage.Height)
 			parsedContent.WriteString(content)
 
-		case *paragraph:
-			par := page.(*paragraph)
+		case *book.Paragraph:
+			par := page.(*book.Paragraph)
 			content := fmt.Sprintf("<p>%v</p>", html.EscapeString(par.Content))
 			parsedContent.WriteString(content)
 		}
