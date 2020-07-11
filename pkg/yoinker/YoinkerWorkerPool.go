@@ -4,31 +4,40 @@ import (
 	"fmt"
 )
 
-//WorkerPoolYoinker provieds interface for yoinker worker pattern
-type WorkerPoolYoinker interface {
-	StartScrapeWorkerPool(numberOfWorkers int, jobChannel chan BookMetadata, resultChannel chan string, exportPath string)
-}
-
-//PoolYoinker Implements WorkerPoolYoinker to provide abstraction for yoinker worer pools
-type PoolYoinker struct {
-}
-
 //StartScrapeWorkerPool start the yoinker worker pool
-func (p *PoolYoinker) StartScrapeWorkerPool(numberOfWorkers int, jobChannel chan BookMetadata, resultChannel chan string, exportPath string) {
+func StartScrapeWorkerPool(numberOfWorkers int, jobChannel chan BookMetadata, resultChannel chan string, exportPath string) {
 	for i := 0; i < numberOfWorkers; i++ {
-		go p.worker(jobChannel, resultChannel, exportPath)
+		go scrapeWorker(jobChannel, resultChannel, exportPath)
 	}
 }
 
-func (p *PoolYoinker) worker(jobs <-chan BookMetadata, results chan<- string, exportPath string) {
+func scrapeWorker(jobs <-chan BookMetadata, results chan<- string, exportPath string) {
 	for metadata := range jobs {
-		results <- p.startScraping(metadata, exportPath)
+		results <- startScraping(metadata, exportPath)
 	}
 }
 
-func (p *PoolYoinker) startScraping(bookMetadata BookMetadata, exportPath string) string {
+func startScraping(bookMetadata BookMetadata, exportPath string) string {
 	yoinker := NewYoinker()
-	fmt.Printf("Start scraping %v \n", bookMetadata.Title)
+	consoleLog(fmt.Sprintf("Start scraping %v \n", bookMetadata.Title))
 	yoinker.StartYoink(bookMetadata, exportPath)
 	return bookMetadata.Title
+}
+
+//BeginMultiConvert scrapes all books with a worker pool of given size and exports them to a given path
+func BeginMultiConvert(books []BookMetadata, numberOfWorkers int, outputPath string) {
+	jobChannel := make(chan BookMetadata, 100)
+	resultChannel := make(chan string, 100)
+
+	StartScrapeWorkerPool(numberOfWorkers, jobChannel, resultChannel, outputPath)
+
+	for _, metadata := range books {
+		jobChannel <- metadata
+	}
+	close(jobChannel)
+	for range books {
+		result := <-resultChannel
+		consoleLog(fmt.Sprintf("Finished scraping %v\n", result))
+	}
+	close(resultChannel)
 }

@@ -1,7 +1,6 @@
 package terminal
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -51,24 +50,8 @@ func StartTerminal() {
 }
 
 func scrapeCommand(c *cli.Context) error {
-	jobChannel := make(chan yoinker.BookMetadata, 100)
-	resultChannel := make(chan string, 100)
-
 	jobs := getBookConfigs(c.String("in"))
-	var workerPool yoinker.WorkerPoolYoinker
-	workerPool = &yoinker.PoolYoinker{}
-	workerPool.StartScrapeWorkerPool(c.Int("r"), jobChannel, resultChannel, c.String("out"))
-
-	for _, metadata := range jobs {
-		jobChannel <- metadata
-	}
-	close(jobChannel)
-	for range jobs {
-		result := <-resultChannel
-		fmt.Printf("Finished scraping %v\n", result)
-	}
-	close(resultChannel)
-
+	yoinker.BeginMultiConvert(jobs, c.Int("r"), c.String("out"))
 	return nil
 }
 
