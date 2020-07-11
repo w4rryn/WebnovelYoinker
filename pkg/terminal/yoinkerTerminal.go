@@ -52,6 +52,7 @@ func StartTerminal() {
 }
 
 func scrapeCommand(c *cli.Context) error {
+	yoinker.OnError = append(yoinker.OnError, logErr)
 	fmt.Println("Starting conversion.")
 	fmt.Println("Status:")
 	jobs := getBookConfigs(c.String("in"))
@@ -71,7 +72,7 @@ func scrapeCommand(c *cli.Context) error {
 
 func logErr(err error) {
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err.Error())
 	}
 }
 
