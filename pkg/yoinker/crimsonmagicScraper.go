@@ -1,9 +1,9 @@
 package yoinker
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
@@ -18,19 +18,22 @@ type crimsonmagicNovelScraper struct {
 
 //BeginScrape Scrapes all chapters
 func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- chapter) {
+	chapterStrings := strings.Join(chapterURLs, ",")
+	invokeYoinkerScrapeEvent(OnScrapeStart, chapterStrings)
 	for _, chapterURL := range chapterURLs {
-		c.makeCallback(fmt.Sprintf("Downloading chapter: %v", chapterURL))
 		resp, err := http.Get(chapterURL)
 		if err != nil {
-			c.makeCallback(err.Error())
+			invokeError(err)
 		}
 		root, err := html.Parse(resp.Body)
 		if err != nil {
-			c.makeCallback(err.Error())
+			invokeError(err)
 		}
-		chapterChannel <- c.getChapter(root)
+		chapter := c.getChapter(root)
+		chapterChannel <- chapter
 	}
 
+	invokeYoinkerScrapeEvent(OnChapterScraped, chapterStrings)
 	close(chapterChannel)
 }
 
@@ -79,10 +82,4 @@ func (c crimsonmagicNovelScraper) getChapter(root *html.Node) chapter {
 		}
 	}
 	return chapter
-}
-
-func (c crimsonmagicNovelScraper) makeCallback(s string) {
-	if c.PrintCallback != nil {
-		c.PrintCallback(s)
-	}
 }

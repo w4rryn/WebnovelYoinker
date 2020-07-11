@@ -19,10 +19,11 @@ type epubExporter struct {
 
 //Export exports a valume as epub
 func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel <-chan chapter) string {
+	invokeYoinkerScrapeEvent(OnExportStart, metadata.Title)
 	e.epubExport = epub.NewEpub(metadata.Title)
 	cssPath, err := e.epubExport.AddCSS("https://raw.githubusercontent.com/lethal-bacon0/WebnovelYoinker/master/assets/ebookstyle.css", "stylesheet.css")
 	if err != nil {
-		log.Fatal(err)
+		invokeError(err)
 	}
 	var coverImage string
 	var waiter sync.WaitGroup
@@ -31,7 +32,7 @@ func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel
 		var err error
 		coverImage, err = e.epubExport.AddImage(metadata.Cover, "")
 		if err != nil {
-			log.Fatal(err)
+			invokeError(err)
 		}
 		waiter.Done()
 	}()
@@ -42,7 +43,6 @@ func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel
 		if chapter.ChapterName == "" {
 			chapter.ChapterName = fmt.Sprintf("Chapter %v", i)
 		}
-		// e.makeCallback(fmt.Sprintf("Adding chapter %v of %v.", chapter.ChapterName, metadata.Title))
 		e.epubExport.AddSection(e.addChapter(chapter), chapter.ChapterName, "", cssPath)
 	}
 
@@ -58,6 +58,7 @@ func (e *epubExporter) Export(metadata BookMetadata, path string, chapterChannel
 	if err != nil {
 		log.Fatal(err)
 	}
+	invokeYoinkerScrapeEvent(OnExportFinished, metadata.Title)
 	return exportPath
 }
 

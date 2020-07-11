@@ -18,7 +18,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/terminal/goyoinker.go",
             "env": {},
-            "args": ["scrape", "-in", "/home/uuhg/Downloads/exports.yaml", "-out", "/home/uuhg/Downloads/books", "-r", "3"]
+            "args": ["scrape", "-in", "/home/uuhg/Downloads/exports.yaml", "-out", "/home/uuhg/Downloads/books", "-r", "7"]
         }
     ]
 }
