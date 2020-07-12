@@ -6,4 +6,7 @@ import "github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
 type ScrapingStrategy interface {
 	// BeginScrape(metadata BookMetadata, chapterURLs []string) (*Volume, error)
 	BeginScrape(chapterURLs []string, chapterChannel chan<- book.Chapter)
+
+	//GetAvailableChapters returns an array with all possible chapters
+	GetAvailableChapters(url string) []book.Volume
 }

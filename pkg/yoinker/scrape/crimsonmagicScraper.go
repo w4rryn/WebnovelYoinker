@@ -3,7 +3,6 @@ package scrape
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
@@ -21,7 +20,7 @@ type CrimsonmagicNovelScraper struct {
 
 //BeginScrape Scrapes all chapters
 func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- book.Chapter) {
-	chapterStrings := strings.Join(chapterURLs, ",")
+	var chapters []book.Chapter
 	for _, chapterURL := range chapterURLs {
 		resp, err := http.Get(chapterURL)
 		if err != nil {
@@ -39,20 +38,22 @@ func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChan
 				})
 			}()
 		}
-		chapter := c.getChapter(root)
+		chapter := c.scrapeChapter(root)
 		chapterChannel <- chapter
+		chapters = append(chapters, chapter)
 	}
 
-	// invokeYoinkerScrapeEvent(OnChapterScrapedEvent, chapterStrings)
 	go func() {
 		events.OnVolumeScrapedEvent.Invoke(&yoinker.CtxYoink{
-			ChapterURL: chapterStrings,
+			Volume: book.Volume{
+				Chapters: chapters,
+			},
 		})
 	}()
 	close(chapterChannel)
 }
 
-func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) book.Chapter {
+func (c CrimsonmagicNovelScraper) scrapeChapter(root *html.Node) book.Chapter {
 	var chapter book.Chapter
 	mainContentMatcher := scrape.ByClass("entry-content")
 	paragraphMatcher := scrape.ByTag(atom.P)
@@ -97,4 +98,9 @@ func (c CrimsonmagicNovelScraper) getChapter(root *html.Node) book.Chapter {
 		}
 	}
 	return chapter
+}
+
+//GetAvailableChapters gets all available Volume information from a url
+func (c CrimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume {
+	panic("Not implemented") //TODO
 }

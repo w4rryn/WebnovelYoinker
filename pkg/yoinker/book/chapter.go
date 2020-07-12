@@ -5,4 +5,5 @@ type Chapter struct {
 	ChapterName string       `json:"chapterName"`
 	Images      []string     `json:"images"`
 	Content     []PageObject `json:"content"`
+	URL         string       `json:"url"`
 }

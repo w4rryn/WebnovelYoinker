@@ -1,9 +1,9 @@
 package yoinker
 
+import "github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
+
 //CtxYoink Provides event context
 type CtxYoink struct {
-	ChapterName string
-	ChapterURL  string
-	VolumeTitle string
-	Error       error
+	Volume book.Volume
+	Error  error
 }

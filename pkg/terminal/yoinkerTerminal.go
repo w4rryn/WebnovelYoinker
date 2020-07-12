@@ -41,6 +41,8 @@ func StartTerminal() {
 		},
 	}
 
+	singleScrapeFlags := []cli.Flag{}
+
 	app.Commands = []*cli.Command{
 		{
 			Name:   "scrape",
@@ -48,12 +50,22 @@ func StartTerminal() {
 			Flags:  scrapeFlags,
 			Action: scrapeCommand,
 		},
+		{
+			Name:   "yoink",
+			Usage:  "Attempts to scrape a single volume from a specified url",
+			Flags:  singleScrapeFlags,
+			Action: singleScrapeCommand,
+		},
 	}
 
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func singleScrapeCommand(c *cli.Context) error {
+	panic("Not implemented") //TODO
 }
 
 func scrapeCommand(c *cli.Context) error {

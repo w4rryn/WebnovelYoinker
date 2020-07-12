@@ -23,7 +23,9 @@ type EpubExporter struct {
 func (e *EpubExporter) Export(metadata book.Metadata, path string, chapterChannel <-chan book.Chapter) string {
 	go func() {
 		events.OnExportStartEvent.Invoke(&yoinker.CtxYoink{
-			VolumeTitle: metadata.Title,
+			Volume: book.Volume{
+				Metadata: metadata,
+			},
 		})
 	}()
 	e.epubExport = epub.NewEpub(metadata.Title)
@@ -66,7 +68,9 @@ func (e *EpubExporter) Export(metadata book.Metadata, path string, chapterChanne
 	}
 	go func() {
 		events.OnExportFinishedEvent.Invoke(&yoinker.CtxYoink{
-			VolumeTitle: metadata.Title,
+			Volume: book.Volume{
+				Metadata: metadata,
+			},
 		})
 	}()
 	return exportPath
