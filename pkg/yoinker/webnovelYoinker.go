@@ -15,3 +15,8 @@ func (y *WebnovelYoinker) StartYoink(metadata book.Metadata, path string) {
 	go y.Scraper[metadata.WebsiteURL].BeginScrape(metadata.ChapterURLs, chapterChannel)
 	y.Exporter[metadata.Format].Export(metadata, path, chapterChannel)
 }
+
+//GetAvailableVolumes get all available volumes of provided url
+func (y *WebnovelYoinker) GetAvailableVolumes(url string, website string) []book.Volume {
+	return y.Scraper[website].GetAvailableChapters(url)
+}
