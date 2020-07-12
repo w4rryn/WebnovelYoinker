@@ -1,6 +1,7 @@
 package scrape
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,13 +24,11 @@ func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChan
 	var chapters []book.Chapter
 	for _, chapterURL := range chapterURLs {
 		resp, err := http.Get(chapterURL)
-		if err != nil {
-			go func() {
-				events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
-					Error: err,
-				})
-			}()
-		}
+		go func() {
+			events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
+				Error: err,
+			})
+		}()
 		root, err := html.Parse(resp.Body)
 		if err != nil {
 			go func() {
@@ -102,5 +101,45 @@ func (c CrimsonmagicNovelScraper) scrapeChapter(root *html.Node) book.Chapter {
 
 //GetAvailableChapters gets all available Volume information from a url
 func (c CrimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume {
-	panic("Not implemented") //TODO
+	response, err := http.Get(url)
+	go func() {
+		events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
+			Error: err,
+		})
+	}()
+	root, err := html.Parse(response.Body)
+	go func() {
+		events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
+			Error: err,
+		})
+	}()
+	entryContent, ok := scrape.Find(root, scrape.ByClass("entry-content"))
+	if !ok {
+		return nil
+	}
+	volumeMatcher := func(n *html.Node) bool {
+		if n.DataAtom == atom.P && n.Parent != nil && n.Parent.Parent != nil {
+			return scrape.Attr(n, "style") == "text-align: center;"
+		}
+		return false
+	}
+	var volumes []book.Volume
+	volumeNodes := scrape.FindAll(entryContent, volumeMatcher)
+	for i, volumeNode := range volumeNodes {
+		var chapters []book.Chapter
+		for _, chapterNode := range scrape.FindAll(volumeNode, scrape.ByTag(atom.A)) {
+			chapters = append(chapters, book.Chapter{
+				ChapterName: scrape.Text(chapterNode),
+				URL:         scrape.Attr(chapterNode, "href"),
+			})
+		}
+		currentVolume := book.Volume{
+			Chapters: chapters,
+			Metadata: book.Metadata{
+				Title: fmt.Sprintf("Volume %v", i+1),
+			},
+		}
+		volumes = append(volumes, currentVolume)
+	}
+	return volumes
 }
