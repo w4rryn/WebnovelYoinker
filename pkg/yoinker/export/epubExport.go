@@ -14,13 +14,13 @@ import (
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/events"
 )
 
-//EpubExporter exports a volume a epub
-type EpubExporter struct {
+//epubExporter exports a volume a epub
+type epubExporter struct {
 	epubExport *epub.Epub
 }
 
 //Export exports a valume as epub
-func (e *EpubExporter) Export(metadata book.Metadata, path string, chapterChannel <-chan book.Chapter) string {
+func (e *epubExporter) Export(metadata book.Metadata, path string, chapterChannel <-chan book.Chapter) string {
 	go func() {
 		events.OnExportStartEvent.Invoke(&yoinker.CtxYoink{
 			Volume: book.Volume{
@@ -63,20 +63,15 @@ func (e *EpubExporter) Export(metadata book.Metadata, path string, chapterChanne
 		log.Fatal(err)
 	}
 	err = e.epubExport.Write(exportPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	go func() {
-		events.OnExportFinishedEvent.Invoke(&yoinker.CtxYoink{
-			Volume: book.Volume{
-				Metadata: metadata,
-			},
-		})
-	}()
+	events.OnExportFinishedEvent.Invoke(&yoinker.CtxYoink{
+		Volume: book.Volume{
+			Metadata: metadata,
+		},
+	})
 	return exportPath
 }
 
-func (e *EpubExporter) addChapter(chapter book.Chapter) string {
+func (e *epubExporter) addChapter(chapter book.Chapter) string {
 	var parsedContent strings.Builder
 	parsedContent.WriteString(fmt.Sprintf("<p><strong> %v </strong></p>", chapter.ChapterName))
 	for _, page := range chapter.Content {
@@ -104,4 +99,9 @@ func (e *EpubExporter) addChapter(chapter book.Chapter) string {
 		}
 	}
 	return parsedContent.String()
+}
+
+//NewEpubExporter creates a new epub exporter
+func NewEpubExporter() yoinker.IExportStrategy {
+	return &epubExporter{}
 }

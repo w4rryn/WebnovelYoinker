@@ -13,14 +13,14 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
-// CrimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
-type CrimsonmagicNovelScraper struct {
+// crimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
+type crimsonmagicNovelScraper struct {
 	chapterUrls   []string
 	PrintCallback func(s string)
 }
 
 //BeginScrape Scrapes all chapters
-func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- book.Chapter) {
+func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- book.Chapter) {
 	var chapters []book.Chapter
 	for _, chapterURL := range chapterURLs {
 		resp, err := http.Get(chapterURL)
@@ -52,7 +52,7 @@ func (c *CrimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChan
 	close(chapterChannel)
 }
 
-func (c CrimsonmagicNovelScraper) scrapeChapter(root *html.Node) book.Chapter {
+func (c crimsonmagicNovelScraper) scrapeChapter(root *html.Node) book.Chapter {
 	var chapter book.Chapter
 	mainContentMatcher := scrape.ByClass("entry-content")
 	paragraphMatcher := scrape.ByTag(atom.P)
@@ -100,7 +100,7 @@ func (c CrimsonmagicNovelScraper) scrapeChapter(root *html.Node) book.Chapter {
 }
 
 //GetAvailableChapters gets all available Volume information from a url
-func (c CrimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume {
+func (c crimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume {
 	response, err := http.Get(url)
 	go func() {
 		events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
@@ -142,4 +142,9 @@ func (c CrimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume
 		volumes = append(volumes, currentVolume)
 	}
 	return volumes
+}
+
+//NewCrimsonmagicScraper creates a new crimsonmagic scraper
+func NewCrimsonmagicScraper() yoinker.IScrapingStrategy {
+	return &crimsonmagicNovelScraper{}
 }
