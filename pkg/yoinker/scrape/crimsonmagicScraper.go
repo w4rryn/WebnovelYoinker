@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/html/atom"
 )
 
-// crimsonmagicNovelScraper is a concrete strategy to scrape a novel from cromsonmagic.com
+// crimsonmagicNovelScraper is a concrete strategy to scrape a novel from crimsonmagic.com
 type crimsonmagicNovelScraper struct {
 	chapterUrls   []string
 	PrintCallback func(s string)
@@ -22,25 +22,28 @@ type crimsonmagicNovelScraper struct {
 //BeginScrape Scrapes all chapters
 func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- book.Chapter) {
 	var chapters []book.Chapter
-	for _, chapterURL := range chapterURLs {
-		resp, err := http.Get(chapterURL)
-		go func() {
-			events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
-				Error: err,
-			})
-		}()
-		root, err := html.Parse(resp.Body)
-		if err != nil {
-			go func() {
-				events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
-					Error: err,
-				})
-			}()
-		}
-		chapter := c.scrapeChapter(root)
-		chapterChannel <- chapter
-		chapters = append(chapters, chapter)
+	jobChannel := make(chan book.Chapter, 100)
+	resultChannel := make(chan book.Chapter, 100)
+
+	for i := 0; i < 8; i++ {
+		go c.scrapeChapterWorker(jobChannel, resultChannel)
 	}
+
+	go func() {
+		for i, chapterURL := range chapterURLs {
+			jobChannel <- book.Chapter{
+				ChapterNumber: i,
+				URL:           chapterURL,
+			}
+		}
+		close(jobChannel)
+	}()
+
+	for i := 0; i < len(chapterURLs); i++ {
+		//TODO sort the chapters
+		chapters = append(chapters, <-resultChannel)
+	}
+	close(resultChannel)
 
 	go func() {
 		events.OnVolumeScrapedEvent.Invoke(&yoinker.CtxYoink{
@@ -49,11 +52,40 @@ func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChan
 			},
 		})
 	}()
+
+	chapters = sortChapters(chapters)
+
+	for _, chapter := range chapters {
+		chapterChannel <- chapter
+	}
 	close(chapterChannel)
 }
 
-func (c crimsonmagicNovelScraper) scrapeChapter(root *html.Node) book.Chapter {
-	var chapter book.Chapter
+func (c *crimsonmagicNovelScraper) scrapeChapterWorker(jobs <-chan book.Chapter, results chan<- book.Chapter) {
+	for job := range jobs {
+		results <- c.scrapeChapter(job.URL, job.ChapterNumber)
+	}
+}
+
+func (c *crimsonmagicNovelScraper) scrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
+	resp, err := http.Get(chapterURL)
+	go func() {
+		events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
+			Error: err,
+		})
+	}()
+	root, err := html.Parse(resp.Body)
+	if err != nil {
+		go func() {
+			events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
+				Error: err,
+			})
+		}()
+	}
+	chapter := book.Chapter{
+		ChapterNumber: chapterNumber,
+		URL:           chapterURL,
+	}
 	mainContentMatcher := scrape.ByClass("entry-content")
 	paragraphMatcher := scrape.ByTag(atom.P)
 	class, _ := scrape.Find(root, mainContentMatcher)
