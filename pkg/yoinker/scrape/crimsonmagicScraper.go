@@ -40,7 +40,6 @@ func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChan
 	}()
 
 	for i := 0; i < len(chapterURLs); i++ {
-		//TODO sort the chapters
 		chapters = append(chapters, <-resultChannel)
 	}
 	close(resultChannel)
