@@ -1,17 +1,25 @@
 package scrape
 
-import "github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
+import (
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
+)
 
-//WuxiaWorldScraper scraping strategy for Wuxiaworld.com
-type WuxiaWorldScraper struct {
+//wuxiaWorldScraper scraping strategy for Wuxiaworld.com
+type wuxiaWorldScraper struct {
 }
 
-// BeginScrape (metadata BookMetadata, chapterURLs []string) (*Volume, error)
-func (w *WuxiaWorldScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- book.Chapter) {
-	panic("not implemented") // TODO: Implement
+// BeginScrape(metadata BookMetadata, chapterURLs []string) (*Volume, error)
+func (w *wuxiaWorldScraper) ScrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
+	panic("Not implemented") // TODO: implement  this
 }
 
-//GetAvailableChapters returns an array with all possible chapters
-func (w *WuxiaWorldScraper) GetAvailableChapters(url string) []book.Volume {
-	panic("not implemented") // TODO: Implement
+//GetAwvailableChapters returns an array with all possible chapters
+func (w *wuxiaWorldScraper) GetAvailableChapters(url string) []book.Volume {
+	panic("Not implemented") // TODO: implement  this
+}
+
+//NewWuxiaScraper creates a new wuxia scraper strategy
+func NewWuxiaScraper() yoinker.IScrapingStrategy {
+	return &wuxiaWorldScraper{}
 }

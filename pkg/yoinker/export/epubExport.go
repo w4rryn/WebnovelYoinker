@@ -19,7 +19,7 @@ type epubExporter struct {
 }
 
 //Export exports a valume as epub
-func (e *epubExporter) Export(metadata book.Metadata, path string, chapterChannel <-chan book.Chapter) string {
+func (e *epubExporter) Export(metadata book.Metadata, path string, chapters []book.Chapter) string {
 	var (
 		coverImage string
 		waiter     sync.WaitGroup
@@ -38,22 +38,21 @@ func (e *epubExporter) Export(metadata book.Metadata, path string, chapterChanne
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+		e.epubExport.SetCover(coverImage, "")
+		e.epubExport.SetAuthor(metadata.Author)
+		e.epubExport.SetLang(metadata.Language)
 		waiter.Done()
 	}()
 
-	i := 0
-	for chapter := range chapterChannel {
-		i++
+	for i, chapter := range chapters {
 		if chapter.ChapterName == "" {
-			chapter.ChapterName = fmt.Sprintf("Chapter %v", i)
+			chapter.ChapterName = fmt.Sprintf("Chapter %v", i+1)
 		}
 		e.epubExport.AddSection(e.addChapter(chapter), chapter.ChapterName, "", cssPath)
 	}
 
 	waiter.Wait()
-	e.epubExport.SetCover(coverImage, "")
-	e.epubExport.SetAuthor(metadata.Author)
-	e.epubExport.SetLang(metadata.Language)
+
 	exportPath := filepath.Join(path, metadata.Title+".epub")
 	if err != nil {
 		log.Fatal(err)

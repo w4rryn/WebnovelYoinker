@@ -18,45 +18,8 @@ type crimsonmagicNovelScraper struct {
 	PrintCallback func(s string)
 }
 
-//BeginScrape Scrapes all chapters
-func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChannel chan<- book.Chapter) {
-	var chapters []book.Chapter
-	jobChannel := make(chan book.Chapter, 100)
-	resultChannel := make(chan book.Chapter, 100)
-
-	for i := 0; i < 8; i++ {
-		go c.scrapeChapterWorker(jobChannel, resultChannel)
-	}
-
-	go func() {
-		for i, chapterURL := range chapterURLs {
-			jobChannel <- book.Chapter{
-				ChapterNumber: i,
-				URL:           chapterURL,
-			}
-		}
-		close(jobChannel)
-	}()
-
-	for i := 0; i < len(chapterURLs); i++ {
-		chapters = append(chapters, <-resultChannel)
-	}
-	close(resultChannel)
-	chapters = sortChapters(chapters)
-
-	for _, chapter := range chapters {
-		chapterChannel <- chapter
-	}
-	close(chapterChannel)
-}
-
-func (c *crimsonmagicNovelScraper) scrapeChapterWorker(jobs <-chan book.Chapter, results chan<- book.Chapter) {
-	for job := range jobs {
-		results <- c.scrapeChapter(job.URL, job.ChapterNumber)
-	}
-}
-
-func (c *crimsonmagicNovelScraper) scrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
+//ScrapeChapter Scrapes all chapters
+func (c *crimsonmagicNovelScraper) ScrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
 	resp, err := http.Get(chapterURL)
 	if err != nil {
 		//TODO
