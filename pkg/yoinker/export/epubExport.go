@@ -11,7 +11,6 @@ import (
 	"github.com/bmaupin/go-epub"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/events"
 )
 
 //epubExporter exports a volume a epub
@@ -21,26 +20,23 @@ type epubExporter struct {
 
 //Export exports a valume as epub
 func (e *epubExporter) Export(metadata book.Metadata, path string, chapterChannel <-chan book.Chapter) string {
-	go func() {
-		events.OnExportStartEvent.Invoke(&yoinker.CtxYoink{
-			Volume: book.Volume{
-				Metadata: metadata,
-			},
-		})
-	}()
+	var (
+		coverImage string
+		waiter     sync.WaitGroup
+	)
+
 	e.epubExport = epub.NewEpub(metadata.Title)
 	cssPath, err := e.epubExport.AddCSS("https://raw.githubusercontent.com/lethal-bacon0/WebnovelYoinker/master/assets/ebookstyle.css", "stylesheet.css")
 	if err != nil {
-		// invokeError(err)
+		log.Fatal(err.Error())
 	}
-	var coverImage string
-	var waiter sync.WaitGroup
+
 	go func() {
 		waiter.Add(1)
 		var err error
 		coverImage, err = e.epubExport.AddImage(metadata.Cover, "")
 		if err != nil {
-			// invokeError(err)
+			log.Fatal(err.Error())
 		}
 		waiter.Done()
 	}()
@@ -63,11 +59,8 @@ func (e *epubExporter) Export(metadata book.Metadata, path string, chapterChanne
 		log.Fatal(err)
 	}
 	err = e.epubExport.Write(exportPath)
-	events.OnExportFinishedEvent.Invoke(&yoinker.CtxYoink{
-		Volume: book.Volume{
-			Metadata: metadata,
-		},
-	})
+	if err != nil {
+	}
 	return exportPath
 }
 
@@ -80,7 +73,7 @@ func (e *epubExporter) addChapter(chapter book.Chapter) string {
 			pageImage := page.(*book.PageImage)
 			imagePath, err := e.epubExport.AddImage(pageImage.Image, "")
 			if err != nil {
-				// e.makeCallback(err.Error())
+				continue
 			}
 			content := fmt.Sprintf("<div class=\"width\">"+
 				"<div class=\"pc\">"+

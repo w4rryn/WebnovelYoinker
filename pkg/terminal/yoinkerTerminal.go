@@ -1,12 +1,10 @@
 package terminal
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -35,12 +33,6 @@ func StartTerminal() {
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-func logErr(y *yoinker.CtxYoink) {
-	if y.Error != nil {
-		fmt.Println(y.Error.Error())
 	}
 }
 

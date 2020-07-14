@@ -7,7 +7,6 @@ import (
 
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/events"
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
@@ -43,15 +42,6 @@ func (c *crimsonmagicNovelScraper) BeginScrape(chapterURLs []string, chapterChan
 		chapters = append(chapters, <-resultChannel)
 	}
 	close(resultChannel)
-
-	go func() {
-		events.OnVolumeScrapedEvent.Invoke(&yoinker.CtxYoink{
-			Volume: book.Volume{
-				Chapters: chapters,
-			},
-		})
-	}()
-
 	chapters = sortChapters(chapters)
 
 	for _, chapter := range chapters {
@@ -68,19 +58,10 @@ func (c *crimsonmagicNovelScraper) scrapeChapterWorker(jobs <-chan book.Chapter,
 
 func (c *crimsonmagicNovelScraper) scrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
 	resp, err := http.Get(chapterURL)
-	go func() {
-		events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
-			Error: err,
-		})
-	}()
-	root, err := html.Parse(resp.Body)
 	if err != nil {
-		go func() {
-			events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
-				Error: err,
-			})
-		}()
+		//TODO
 	}
+	root, err := html.Parse(resp.Body)
 	chapter := book.Chapter{
 		ChapterNumber: chapterNumber,
 		URL:           chapterURL,
@@ -133,17 +114,10 @@ func (c *crimsonmagicNovelScraper) scrapeChapter(chapterURL string, chapterNumbe
 //GetAvailableChapters gets all available Volume information from a url
 func (c crimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume {
 	response, err := http.Get(url)
-	go func() {
-		events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
-			Error: err,
-		})
-	}()
+	if err != nil {
+		return nil
+	}
 	root, err := html.Parse(response.Body)
-	go func() {
-		events.OnErrorEvent.Invoke(&yoinker.CtxYoink{
-			Error: err,
-		})
-	}()
 	entryContent, ok := scrape.Find(root, scrape.ByClass("entry-content"))
 	if !ok {
 		return nil
