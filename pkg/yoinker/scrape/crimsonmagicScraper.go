@@ -22,7 +22,7 @@ type crimsonmagicNovelScraper struct {
 func (c *crimsonmagicNovelScraper) ScrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
 	resp, err := http.Get(chapterURL)
 	if err != nil {
-		//TODO
+		return book.Chapter{}
 	}
 	root, err := html.Parse(resp.Body)
 	chapter := book.Chapter{

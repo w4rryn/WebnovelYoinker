@@ -33,7 +33,7 @@ func (w *webnovelYoinker) StartYoink(metadata book.Metadata, path string) string
 	waiter.Add(1)
 	go func() {
 		for i, chapterURL := range metadata.ChapterURLs {
-			jobs <- book.Chapter{ChapterNumber: i, URL: chapterURL}
+			jobs <- book.Chapter{ChapterNumber: i + 1, URL: chapterURL}
 		}
 		close(jobs)
 		waiter.Done()
