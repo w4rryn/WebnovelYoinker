@@ -49,7 +49,7 @@ Declaring volumes as YAML file:
 ```
 Downloading declared books:
 ```zsh
-Linux:
+Linux and Windows (powershell):
 goyoinker scrape -in example-books.yaml -out OUTPUT_DIRECTORY -r 3
 ```
 The flag -r declares how many books should be downloaded in parallel 
