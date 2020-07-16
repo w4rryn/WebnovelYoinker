@@ -12,6 +12,8 @@ func GetScraper(scraper book.ScrapingWebsite) (yoinker.IScrapingStrategy, error)
 	switch scraper {
 	case book.CRIMSON:
 		return NewCrimsonmagicScraper(), nil
+	case book.WUXIA:
+		return NewWuxiaScraper(), nil
 	}
 
 	return nil, errors.New("Source not supported")

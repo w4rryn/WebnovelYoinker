@@ -5,7 +5,6 @@ import (
 
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/events"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/export"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/scrape"
 	"github.com/schollz/progressbar/v3"
@@ -35,7 +34,6 @@ var scrapeFlags = []cli.Flag{
 }
 
 func scrapeCommand(c *cli.Context) error {
-	events.OnErrorEvent.Add(logErr)
 	fmt.Println("Starting conversion.")
 	fmt.Println("Status:")
 	jobs := getBookConfigs(c.String("in"))

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -11,68 +12,84 @@ import (
 	"github.com/bmaupin/go-epub"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/events"
 )
+
+var extensionMediaTypes = map[string]string{
+	".css":   "text/css",
+	".gif":   "image/gif",
+	".jpeg":  "image/jpeg",
+	".jpg":   "image/jpeg",
+	".otf":   "application/vnd.ms-opentype",
+	".png":   "image/png",
+	".svg":   "image/svg+xml",
+	".ttf":   "application/font-sfnt",
+	".woff":  "application/font-woff",
+	".woff2": "font/woff2",
+}
 
 //epubExporter exports a volume a epub
 type epubExporter struct {
 	epubExport *epub.Epub
+	fileDump   *os.File
 }
 
 //Export exports a valume as epub
-func (e *epubExporter) Export(metadata book.Metadata, path string, chapterChannel <-chan book.Chapter) string {
-	go func() {
-		events.OnExportStartEvent.Invoke(&yoinker.CtxYoink{
-			Volume: book.Volume{
-				Metadata: metadata,
-			},
-		})
-	}()
+func (e *epubExporter) Export(metadata book.Metadata, path string, chapters []book.Chapter) string {
+	var (
+		coverImage string
+		waiter     sync.WaitGroup
+		exportPath = filepath.Join(path, metadata.Title+".epub")
+		err        error
+		cssPath    string
+	)
+	// e.fileDump, err = os.Create(filepath.Join(path, fmt.Sprintf("volume_dump_%v_.txt", metadata.Title)))
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// defer e.fileDump.Close()
+
 	e.epubExport = epub.NewEpub(metadata.Title)
-	cssPath, err := e.epubExport.AddCSS("https://raw.githubusercontent.com/lethal-bacon0/WebnovelYoinker/master/assets/ebookstyle.css", "stylesheet.css")
+	cssPath, err = e.epubExport.AddCSS("https://raw.githubusercontent.com/lethal-bacon0/WebnovelYoinker/master/assets/ebookstyle.css", "stylesheet.css")
 	if err != nil {
-		// invokeError(err)
+		log.Println(err)
 	}
-	var coverImage string
-	var waiter sync.WaitGroup
+	waiter.Add(1)
 	go func() {
-		waiter.Add(1)
-		var err error
 		coverImage, err = e.epubExport.AddImage(metadata.Cover, "")
 		if err != nil {
-			// invokeError(err)
+			coverImage = ""
+		} else {
+			e.epubExport.SetCover(coverImage, "")
 		}
+		e.epubExport.SetAuthor(metadata.Author)
+		e.epubExport.SetLang(metadata.Language)
 		waiter.Done()
 	}()
-
-	i := 0
-	for chapter := range chapterChannel {
-		i++
+	for i, chapter := range chapters {
 		if chapter.ChapterName == "" {
-			chapter.ChapterName = fmt.Sprintf("Chapter %v", i)
+			chapter.ChapterName = fmt.Sprintf("Chapter %v", i+1)
 		}
 		e.epubExport.AddSection(e.addChapter(chapter), chapter.ChapterName, "", cssPath)
 	}
-
 	waiter.Wait()
-	e.epubExport.SetCover(coverImage, "")
-	e.epubExport.SetAuthor(metadata.Author)
-	e.epubExport.SetLang(metadata.Language)
-	exportPath := filepath.Join(path, metadata.Title+".epub")
-	if err != nil {
-		log.Fatal(err)
-	}
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Panic while exporting %v: %v\n", metadata.Title, r)
+		}
+	}()
 	err = e.epubExport.Write(exportPath)
-	events.OnExportFinishedEvent.Invoke(&yoinker.CtxYoink{
-		Volume: book.Volume{
-			Metadata: metadata,
-		},
-	})
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	return exportPath
 }
 
 func (e *epubExporter) addChapter(chapter book.Chapter) string {
-	var parsedContent strings.Builder
+	var (
+		parsedContent strings.Builder
+	)
+
 	parsedContent.WriteString(fmt.Sprintf("<p><strong> %v </strong></p>", chapter.ChapterName))
 	for _, page := range chapter.Content {
 		switch page.(type) {
@@ -80,7 +97,7 @@ func (e *epubExporter) addChapter(chapter book.Chapter) string {
 			pageImage := page.(*book.PageImage)
 			imagePath, err := e.epubExport.AddImage(pageImage.Image, "")
 			if err != nil {
-				// e.makeCallback(err.Error())
+				continue
 			}
 			content := fmt.Sprintf("<div class=\"width\">"+
 				"<div class=\"pc\">"+
@@ -94,6 +111,7 @@ func (e *epubExporter) addChapter(chapter book.Chapter) string {
 
 		case *book.Paragraph:
 			par := page.(*book.Paragraph)
+			// e.fileDump.WriteString(fmt.Sprintf("%v\n", par.Content))
 			content := fmt.Sprintf("<p>%v</p>", html.EscapeString(par.Content))
 			parsedContent.WriteString(content)
 		}
