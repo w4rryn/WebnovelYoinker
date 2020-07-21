@@ -7,6 +7,7 @@ Downloads and converts webnovels to Epub or PDF
 
 #### Currently supported export formats:
   - Epub (epub)
+  - PDF (pdf) (still work in progress, most pdfs won't look remotely good)
   
 #### Basic usage:
 Declaring volumes as YAML file:
