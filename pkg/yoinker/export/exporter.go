@@ -12,6 +12,8 @@ func GetExporter(export book.Exporters) (yoinker.IExportStrategy, error) {
 	switch export {
 	case book.EPUB:
 		return NewEpubExporter(), nil
+	case book.PDF:
+		return NewPdfExporter(), nil
 	}
 	return nil, errors.New("Exporter not supported")
 }
