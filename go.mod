@@ -3,6 +3,7 @@ module github.com/lethal-bacon0/WebnovelYoinker
 go 1.14
 
 require (
+	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.5.0 // indirect
 	github.com/bmaupin/go-epub v0.5.3
 	github.com/johnfercher/maroto v0.27.0
 	github.com/schollz/progressbar/v3 v3.3.4

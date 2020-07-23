@@ -1,4 +1,6 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/SebastiaanKlippert/go-wkhtmltopdf v1.5.0 h1:KNMkSqhko6c7eVncl/laVCS95jRryULVhVwwL0VynnU=
+github.com/SebastiaanKlippert/go-wkhtmltopdf v1.5.0/go.mod h1:zRBvVJtIfhaWvQ9lPIkXrtona4qqSmjZ1HfKvq4dQzI=
 github.com/adrg/strutil v0.1.0/go.mod h1:pXRr2+IyX5AEPAF5icj/EeTaiflPSD2hvGjnguilZgE=
 github.com/adrg/sysfont v0.1.0/go.mod h1:DzISco90USPZJ+lmtpuz1SOTn1fih6YyB0KG2TEP/0U=
 github.com/adrg/xdg v0.2.1/go.mod h1:ZuOshBmzV4Ta+s23hdfFZnBsdzmoR3US0d7ErpqSbTQ=
