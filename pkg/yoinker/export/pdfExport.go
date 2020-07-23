@@ -1,83 +1,83 @@
 package export
 
 import (
+	"bytes"
+	"fmt"
+	"html"
 	"log"
 	"path/filepath"
 	"strings"
 
-	"github.com/johnfercher/maroto/pkg/consts"
-	"github.com/johnfercher/maroto/pkg/pdf"
-	"github.com/johnfercher/maroto/pkg/props"
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
+	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
 )
 
-type pdfExporter struct {
+//PdfExporter text  as PDF
+type PdfExporter struct {
 }
 
-func (p *pdfExporter) Export(metadata book.Metadata, path string, chapters []book.Chapter) string {
-	const (
-		fontSize        = 12
-		columnWidth     = 12
-		verticalPadding = 2.0
-		rowHeight       = 5
-		rowBufferSize   = 54
-	)
-	var (
-		paragraphStyle = props.Text{
-			Size:            fontSize,
-			Align:           consts.Left,
-			Top:             0,
-			VerticalPadding: verticalPadding,
-		}
-		line       []string
-		exportPath = filepath.Join(path, metadata.Title+".pdf")
-	)
-	m := pdf.NewMaroto(consts.Portrait, consts.A5)
+//Export exports given strings as PDF
+func (p *PdfExporter) Export(metadata book.Metadata, path string, chapters []book.Chapter) string {
+	var body strings.Builder
 	for _, chapter := range chapters {
-		m.Row(20, func() {
-			m.Col(columnWidth, func() {
-				m.Text(chapter.ChapterName, props.Text{
-					Size:            40,
-					Align:           consts.Center,
-					VerticalPadding: 40,
-				})
-			})
-		})
-		for _, content := range chapter.Content {
-			m.Row(rowHeight, func() {
-				m.Col(columnWidth, func() {
-					m.Text("", paragraphStyle)
-				})
-			})
-			switch content.(type) {
+		body.WriteString(fmt.Sprintf("<h1>%v</h1>", html.EscapeString(chapter.ChapterName)))
+		for _, par := range chapter.Content {
+			switch par.(type) {
+			case *book.PageImage:
+				pageImage := par.(*book.PageImage)
+				content := fmt.Sprintf("<div>"+
+					"<img src=\"%v\" width=\"%v\" height=\"%v\""+
+					"</div>",
+					pageImage.Image, pageImage.Width, pageImage.Height)
+				body.WriteString(content)
+
 			case *book.Paragraph:
-				text := content.(*book.Paragraph)
-				for _, word := range strings.Fields(text.Content) {
-					line = append(line, word)
-					joinedLine := strings.Join(line, " ")
-					if len(joinedLine) >= rowBufferSize {
-						m.Row(rowHeight, func() {
-							m.Col(columnWidth, func() {
-								m.Text(joinedLine, paragraphStyle)
-							})
-						})
-						line = nil
-					}
-				}
+				par := par.(*book.Paragraph)
+				content := fmt.Sprintf("<p>%v</p>", html.EscapeString(par.Content))
+				body.WriteString(content)
 			}
 		}
-		m.AddPage()
 	}
-	err := m.OutputFileAndClose(exportPath)
+	var html = fmt.Sprintf("<!doctype html><meta charset=\"utf-8\"/><html><head><title><h1>%v</h1></title></head>%v</body></html>", metadata.Title, body.String())
+
+	var outputPath = filepath.Join(path, metadata.Title+".pdf")
+	// Client code
+	pdfg := wkhtmltopdf.NewPDFPreparer()
+	pdfg.Dpi.Set(300)
+	pdfg.Orientation.Set(wkhtmltopdf.OrientationPortrait)
+	pdfg.Grayscale.Set(false)
+	page := wkhtmltopdf.NewPageReader(strings.NewReader(html))
+	page.FooterRight.Set("[page]")
+	page.FooterFontSize.Set(10)
+	page.Zoom.Set(0.95)
+
+	pdfg.AddPage(page)
+
+	// The html string is also saved as base64 string in the JSON file
+	jsonBytes, err := pdfg.ToJSON()
 	if err != nil {
-		log.Printf("Could not save PDF: %v\n", err)
+		log.Fatal(err)
 	}
 
-	return exportPath
+	pdfgFromJSON, err := wkhtmltopdf.NewPDFGeneratorFromJSON(bytes.NewReader(jsonBytes))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = pdfgFromJSON.Create()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = pdfgFromJSON.WriteFile(outputPath)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return outputPath
 }
 
 //NewPdfExporter creates a new instance of pdfExporter
-func NewPdfExporter() yoinker.IExportStrategy {
-	return &pdfExporter{}
+func NewPdfExporter() *PdfExporter {
+	return &PdfExporter{}
 }
