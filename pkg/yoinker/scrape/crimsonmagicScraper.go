@@ -5,21 +5,20 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
 
-// crimsonmagicNovelScraper is a concrete strategy to scrape a novel from crimsonmagic.com
-type crimsonmagicNovelScraper struct {
+// CrimsonmagicNovelScraper is a concrete strategy to scrape a novel from crimsonmagic.com
+type CrimsonmagicNovelScraper struct {
 	chapterUrls   []string
 	PrintCallback func(s string)
 }
 
 //ScrapeChapter Scrapes all chapters
-func (c *crimsonmagicNovelScraper) ScrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
+func (c *CrimsonmagicNovelScraper) ScrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
 	resp, err := http.Get(chapterURL)
 	if err != nil {
 		return book.Chapter{}
@@ -75,7 +74,7 @@ func (c *crimsonmagicNovelScraper) ScrapeChapter(chapterURL string, chapterNumbe
 }
 
 //GetAvailableChapters gets all available Volume information from a url
-func (c crimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume {
+func (c CrimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume {
 	response, err := http.Get(url)
 	if err != nil {
 		return nil
@@ -113,6 +112,6 @@ func (c crimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume
 }
 
 //NewCrimsonmagicScraper creates a new crimsonmagic scraper
-func NewCrimsonmagicScraper() yoinker.IScrapingStrategy {
-	return &crimsonmagicNovelScraper{}
+func NewCrimsonmagicScraper() *CrimsonmagicNovelScraper {
+	return &CrimsonmagicNovelScraper{}
 }

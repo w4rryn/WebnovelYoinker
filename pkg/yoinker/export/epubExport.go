@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	"github.com/bmaupin/go-epub"
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
 )
 
@@ -27,14 +26,14 @@ var extensionMediaTypes = map[string]string{
 	".woff2": "font/woff2",
 }
 
-//epubExporter exports a volume a epub
-type epubExporter struct {
+//EpubExporter exports a volume a epub
+type EpubExporter struct {
 	epubExport *epub.Epub
 	fileDump   *os.File
 }
 
 //Export exports a valume as epub
-func (e *epubExporter) Export(metadata book.Metadata, path string, chapters []book.Chapter) string {
+func (e *EpubExporter) Export(metadata book.Metadata, path string, chapters []book.Chapter) string {
 	var (
 		coverImage string
 		waiter     sync.WaitGroup
@@ -79,13 +78,13 @@ func (e *epubExporter) Export(metadata book.Metadata, path string, chapters []bo
 	}()
 	err = e.epubExport.Write(exportPath)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	return exportPath
 }
 
-func (e *epubExporter) addChapter(chapter book.Chapter) string {
+func (e *EpubExporter) addChapter(chapter book.Chapter) string {
 	var (
 		parsedContent strings.Builder
 	)
@@ -120,6 +119,6 @@ func (e *epubExporter) addChapter(chapter book.Chapter) string {
 }
 
 //NewEpubExporter creates a new epub exporter
-func NewEpubExporter() yoinker.IExportStrategy {
-	return &epubExporter{}
+func NewEpubExporter() *EpubExporter {
+	return &EpubExporter{}
 }

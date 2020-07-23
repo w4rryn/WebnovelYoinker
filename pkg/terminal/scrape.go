@@ -5,8 +5,7 @@ import (
 
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/export"
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/scrape"
+	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/factories"
 	"github.com/schollz/progressbar/v3"
 	"github.com/urfave/cli/v2"
 )
@@ -64,11 +63,11 @@ func scrapeCommand(c *cli.Context) error {
 
 func scrapeWorker(jobs <-chan book.Metadata, results chan<- string, exportPath string) {
 	for job := range jobs {
-		scraper, err := scrape.GetScraper(job.Website)
+		scraper, err := factories.GetScraper(job.Website)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		exporter, err := export.GetExporter(job.Format)
+		exporter, err := factories.GetExporter(job.Format)
 		if err != nil {
 			fmt.Println(err.Error())
 		}

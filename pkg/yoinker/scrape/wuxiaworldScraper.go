@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker"
 	"github.com/lethal-bacon0/WebnovelYoinker/pkg/yoinker/book"
 	"github.com/yhat/scrape"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 )
 
-//wuxiaWorldScraper scraping strategy for Wuxiaworld.com
-type wuxiaWorldScraper struct {
+//WuxiaWorldScraper scraping strategy for Wuxiaworld.com
+type WuxiaWorldScraper struct {
 }
 
-// BeginScrape(metadata BookMetadata, chapterURLs []string) (*Volume, error)
-func (w *wuxiaWorldScraper) ScrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
+// ScrapeChapter scrapes given chapter from wuxiaworld.com
+func (w *WuxiaWorldScraper) ScrapeChapter(chapterURL string, chapterNumber int) book.Chapter {
 	var (
 		chapterName         string
 		chapterContent      []book.PageObject
@@ -56,12 +55,12 @@ func (w *wuxiaWorldScraper) ScrapeChapter(chapterURL string, chapterNumber int) 
 	}
 }
 
-//GetAwvailableChapters returns an array with all possible chapters
-func (w *wuxiaWorldScraper) GetAvailableChapters(url string) []book.Volume {
+//GetAvailableChapters returns an array with all possible chapters
+func (w *WuxiaWorldScraper) GetAvailableChapters(url string) []book.Volume {
 	panic("Not implemented") // TODO: implement  this
 }
 
 //NewWuxiaScraper creates a new wuxia scraper strategy
-func NewWuxiaScraper() yoinker.IScrapingStrategy {
-	return &wuxiaWorldScraper{}
+func NewWuxiaScraper() *WuxiaWorldScraper {
+	return &WuxiaWorldScraper{}
 }
