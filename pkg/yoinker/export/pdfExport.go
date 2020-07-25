@@ -72,7 +72,7 @@ func createBookHTML(volume []book.Chapter, title string) string {
 
 			case *book.Paragraph:
 				par := par.(*book.Paragraph)
-				content := fmt.Sprintf("<p>%v</p>", html.EscapeString(par.Content))
+				content := fmt.Sprintf("<p class=\"paragraph\">%v</p>", html.EscapeString(par.Content))
 				body.WriteString(content)
 			}
 		}
