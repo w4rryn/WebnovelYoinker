@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -18,16 +19,54 @@ type PdfExporter struct {
 
 //Export exports given strings as PDF
 func (p *PdfExporter) Export(metadata book.Metadata, path string, chapters []book.Chapter) string {
+	var (
+		body       = createBookHTML(chapters, metadata.Title)
+		outputPath = filepath.Join(path, metadata.Title+".pdf")
+		pdfg       = wkhtmltopdf.NewPDFPreparer()
+	)
+	file, err := os.Create(metadata.Title + "_dump.html")
+	p.checkError(err)
+
+	file.WriteString(body)
+	defer file.Close()
+
+	pdfg.Dpi.Set(300)
+	pdfg.Orientation.Set(wkhtmltopdf.OrientationPortrait)
+	pdfg.Grayscale.Set(false)
+	pdfg.PageSize.Set(wkhtmltopdf.PageSizeA5)
+	pdfg.TOC.Include = true
+	page := wkhtmltopdf.NewPageReader(strings.NewReader(body))
+	page.FooterRight.Set("[page]")
+	page.FooterFontSize.Set(10)
+	page.Zoom.Set(0.95)
+
+	pdfg.AddPage(page)
+
+	jsonBytes, err := pdfg.ToJSON()
+	p.checkError(err)
+
+	pdfgFromJSON, err := wkhtmltopdf.NewPDFGeneratorFromJSON(bytes.NewReader(jsonBytes))
+	p.checkError(err)
+
+	err = pdfgFromJSON.Create()
+	p.checkError(err)
+
+	err = pdfgFromJSON.WriteFile(outputPath)
+	p.checkError(err)
+
+	return outputPath
+}
+
+//createBookHTML converts a chapter array to a html page
+func createBookHTML(volume []book.Chapter, title string) string {
 	var body strings.Builder
-	for _, chapter := range chapters {
+	for _, chapter := range volume {
 		body.WriteString(fmt.Sprintf("<h1>%v</h1>", html.EscapeString(chapter.ChapterName)))
 		for _, par := range chapter.Content {
 			switch par.(type) {
 			case *book.PageImage:
 				pageImage := par.(*book.PageImage)
-				content := fmt.Sprintf("<div>"+
-					"<img src=\"%v\" width=\"%v\" height=\"%v\""+
-					"</div>",
+				content := fmt.Sprintf("<div class=\"width pc\"><img class=\"calibre1\" alt=\"image\" src=\"%v\" width=\"%v\" height=\"%v\"/></div>",
 					pageImage.Image, pageImage.Width, pageImage.Height)
 				body.WriteString(content)
 
@@ -38,43 +77,23 @@ func (p *PdfExporter) Export(metadata book.Metadata, path string, chapters []boo
 			}
 		}
 	}
-	var html = fmt.Sprintf("<!doctype html><meta charset=\"utf-8\"/><html><head><title><h1>%v</h1></title></head>%v</body></html>", metadata.Title, body.String())
+	return fmt.Sprintf("<!doctype html>"+
+		"<meta charset=\"utf-8\"/>"+
+		"<html>"+
+		"<head>"+
+		"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://raw.githubusercontent.com/lethal-bacon0/WebnovelYoinker/master/assets/ebookstyle.css\">"+
+		"<title><h1>%v</h1></title>"+
+		"</head>"+
+		"<body>"+
+		"%v"+
+		"</body>"+
+		"</html>", title, body.String())
+}
 
-	var outputPath = filepath.Join(path, metadata.Title+".pdf")
-	// Client code
-	pdfg := wkhtmltopdf.NewPDFPreparer()
-	pdfg.Dpi.Set(300)
-	pdfg.Orientation.Set(wkhtmltopdf.OrientationPortrait)
-	pdfg.Grayscale.Set(false)
-	page := wkhtmltopdf.NewPageReader(strings.NewReader(html))
-	page.FooterRight.Set("[page]")
-	page.FooterFontSize.Set(10)
-	page.Zoom.Set(0.95)
-
-	pdfg.AddPage(page)
-
-	// The html string is also saved as base64 string in the JSON file
-	jsonBytes, err := pdfg.ToJSON()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	pdfgFromJSON, err := wkhtmltopdf.NewPDFGeneratorFromJSON(bytes.NewReader(jsonBytes))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = pdfgFromJSON.Create()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = pdfgFromJSON.WriteFile(outputPath)
+func (p PdfExporter) checkError(err error) {
 	if err != nil {
 		log.Println(err)
 	}
-
-	return outputPath
 }
 
 //NewPdfExporter creates a new instance of pdfExporter
