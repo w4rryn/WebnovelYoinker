@@ -34,10 +34,10 @@ func (w WebtoonScraper) ScrapeChapter(chapterURL string, chapterNumber int) book
 			}
 			return false
 		}
-		chapter = book.Chapter{
-			ChapterNumber: chapterNumber,
-			URL:           chapterURL,
-		}
+		// chapter = book.Chapter{
+		// 	ChapterNumber: chapterNumber,
+		// 	URL:           chapterURL,
+		// }
 	)
 
 	respnse, err := http.Get(chapterURL)
@@ -65,12 +65,10 @@ func (w WebtoonScraper) ScrapeChapter(chapterURL string, chapterNumber int) book
 			height = 1600
 		}
 		url := scrape.Attr(panelNode, "data-url")
+		//TODO: save image from url to cache and use cache path in pageImage.
 		pageImage := book.NewPageImage(int(height), int(width), url)
-		fmt.Println("Class:", scrape.Attr(panelNode, "class"))
-		fmt.Println("Src:", scrape.Attr(panelNode, "src"))
-		fmt.Println("DataUrl:", scrape.Attr(panelNode, "data-url"))
-		chapter.Images = append(chapter.Images, pageImage.Image)
-		chapter.Content = append(chapter.Content, pageImage)
+		chapterImages = append(chapterImages, pageImage.Image)
+		chapterContent = append(chapterContent, pageImage)
 	}
 
 	return book.Chapter{
