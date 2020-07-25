@@ -8,6 +8,4 @@ const (
 	CRIMSON ScrapingWebsite = "crimsonmagic"
 	//WUXIA scrapes from wuxia
 	WUXIA ScrapingWebsite = "wuxia"
-	//WEBTOON Scxrapes from Webtoon
-	WEBTOON ScrapingWebsite = "webtoon"
 )
