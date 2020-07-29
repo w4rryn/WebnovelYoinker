@@ -20,7 +20,7 @@ Windows:
 ```zsh
 git clone https://github.com/lethal-bacon0/WebnovelYoinker.git
 cd WebnovelYoinker
-make
+make windows
 And then use the exe file in bin. I guess.
 I have no idea how to use make on windows and didn't test it
 ```
