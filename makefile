@@ -15,8 +15,18 @@ build: clean
 clean:
 	rm -rf bin
 
+all: clean linux windows
+
+linux:
+	GOOS=linux
+	go build -o bin/linux/goyoinker cmd/terminal/goyoinker.go
+
+windows:
+	GOOS=windows
+	go build -o bin/windows/goyoinker.exe cmd/terminal/goyoinker.go
+
 install:
 	cp bin/goyoinker /usr/bin
 
-remove:
+remove: 
 	rm /usr/bin/goyoinker
