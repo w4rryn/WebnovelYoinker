@@ -37,7 +37,7 @@ func (p *PdfExporter) Export(metadata book.Metadata, path string, chapters []boo
 	pdfg.TOC.Include = true
 	page := wkhtmltopdf.NewPageReader(strings.NewReader(body))
 	page.FooterRight.Set("[page]")
-	page.FooterFontSize.Set(10)
+	page.FooterFontSize.Set(0)
 	page.Zoom.Set(0.95)
 
 	pdfg.AddPage(page)
@@ -61,27 +61,42 @@ func (p *PdfExporter) Export(metadata book.Metadata, path string, chapters []boo
 func createBookHTML(volume []book.Chapter, title string) string {
 	var body strings.Builder
 	for _, chapter := range volume {
+		isText := false
 		body.WriteString(fmt.Sprintf("<h1>%v</h1>", html.EscapeString(chapter.ChapterName)))
 		for _, par := range chapter.Content {
 			switch par.(type) {
 			case *book.PageImage:
+				if isText {
+					body.WriteString("</div>")
+					isText = false
+				}
 				pageImage := par.(*book.PageImage)
 				content := fmt.Sprintf("<div class=\"width pc\"><img class=\"calibre1\" alt=\"image\" src=\"%v\" width=\"%v\" height=\"%v\"/></div>",
 					pageImage.Image, pageImage.Width, pageImage.Height)
 				body.WriteString(content)
 
 			case *book.Paragraph:
+				if !isText {
+					body.WriteString("<div class=\"text-body\"")
+					isText = true
+				}
 				par := par.(*book.Paragraph)
 				content := fmt.Sprintf("<p>%v</p>", html.EscapeString(par.Content))
 				body.WriteString(content)
 			}
 		}
+		if isText {
+			body.WriteString("</div>")
+		}
+
 	}
 	return fmt.Sprintf("<!doctype html>"+
 		"<meta charset=\"utf-8\"/>"+
 		"<html>"+
 		"<head>"+
-		"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://raw.githubusercontent.com/lethal-bacon0/WebnovelYoinker/master/assets/ebookstyle.css\">"+
+		"<style>"+
+		".text-body{font-size: 16px;}"+
+		"</style>"+
 		"<title><h1>%v</h1></title>"+
 		"</head>"+
 		"<body>"+
