@@ -66,10 +66,12 @@ func scrapeWorker(jobs <-chan book.Metadata, results chan<- string, exportPath s
 		scraper, err := factories.GetScraper(job.Website)
 		if err != nil {
 			fmt.Println(err.Error())
+			continue
 		}
 		exporter, err := factories.GetExporter(job.Format)
 		if err != nil {
 			fmt.Println(err.Error())
+			continue
 		}
 		yoinkerFactory := yoinker.NewYoinkerFactory(scraper, exporter)
 		yoinker := yoinkerFactory.GetYoinker()

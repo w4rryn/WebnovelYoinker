@@ -1,4 +1,4 @@
-package book
+package export
 
 //Exporters declares available exporters
 type Exporters string

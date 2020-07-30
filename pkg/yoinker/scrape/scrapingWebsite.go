@@ -1,4 +1,4 @@
-package book
+package scrape
 
 //ScrapingWebsite declares supported scraping websites
 type ScrapingWebsite string
