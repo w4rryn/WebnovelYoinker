@@ -22,12 +22,12 @@ func StartTerminal() {
 			Flags:  scrapeFlags,
 			Action: scrapeCommand,
 		},
-		// {
-		// 	Name:   "yoink",
-		// 	Usage:  "Attempts to scrape a single volume from a specified url",
-		// 	Flags:  singleScrapeFlags,
-		// 	Action: singleScrapeCommand,
-		// },
+		{
+			Name:   "yoink",
+			Usage:  "Attempts to scrape a single volume from a specified url",
+			Flags:  singleScrapeFlags,
+			Action: singleScrapeCommand,
+		},
 	}
 
 	err := app.Run(os.Args)
