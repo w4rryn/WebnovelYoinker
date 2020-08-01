@@ -26,7 +26,7 @@ windows:
 	go build -o bin/windows/goyoinker.exe cmd/terminal/goyoinker.go
 
 install:
-	cp bin/goyoinker /usr/bin
+	cp bin/linux/goyoinker /usr/bin
 
 remove: 
 	rm /usr/bin/goyoinker
