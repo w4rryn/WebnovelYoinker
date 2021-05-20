@@ -31,6 +31,7 @@ func (w *WuxiaWorldScraper) ScrapeChapter(chapterURL string, chapterNumber int) 
 	if err != nil {
 		return book.Chapter{}
 	}
+	defer response.Body.Close()
 	root, err := html.Parse(response.Body)
 	if chapterNameNode, ok := scrape.Find(root, chapterTitleMatcher); ok {
 		chapterName = scrape.Text(chapterNameNode)
