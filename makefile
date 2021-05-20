@@ -1,32 +1,27 @@
-GOARCH=amd64
-GOARM=5
+PREFIX =	/usr
+DESTDIR =
 
-ifeq ($(OS),Windows_NT)
-    uname_S := Windows
-	GOOS=windows
-endif
-ifeq ($(OS),Linux)
-    uname_S := $(shell uname -s)
-	GOOS=linux
-endif
+.PHONY: all clean build linux windows install deinstall
 
-build: clean
+all: clean build
+
+bin/goyoinker:
 	go build -o bin/goyoinker cmd/terminal/goyoinker.go
+
+build: bin/goyoinker
+
 clean:
 	rm -rf bin
 
-all: clean linux windows
-
 linux:
-	GOOS=linux
-	go build -o bin/linux/goyoinker cmd/terminal/goyoinker.go
+	env GOOS=linux go build -o bin/linux/goyoinker cmd/terminal/goyoinker.go
 
 windows:
-	GOOS=windows
-	go build -o bin/windows/goyoinker.exe cmd/terminal/goyoinker.go
+	env GOOS=windows go build -o bin/windows/goyoinker.exe cmd/terminal/goyoinker.go
 
-install:
-	cp bin/goyoinker /usr/bin
+install: bin/goyoinker
+	mkdir -p ${DESTDIR}${PREFIX}/bin
+	install -m755 bin/goyoinker ${DESTDIR}${PREFIX}/bin/goyoinker
 
-remove: 
-	rm /usr/bin/goyoinker
+uninstall: 
+	rm ${DESTDIR}${PREFIX}/bin/goyoinker
