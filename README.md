@@ -4,6 +4,7 @@ Downloads and converts webnovels to Epub or PDF
 #### Currently supported websites:
   - wuxiaworld.com (wuxia)
   - crimsonmagic.me (crimsonmagic)
+  - fullybookedtls.wordpress.com (fullybookedtls)
 
 #### How to compile
 Requirements:
