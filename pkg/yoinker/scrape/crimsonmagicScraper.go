@@ -23,6 +23,7 @@ func (c *CrimsonmagicNovelScraper) ScrapeChapter(chapterURL string, chapterNumbe
 	if err != nil {
 		return book.Chapter{}
 	}
+	defer resp.Body.Close()
 	root, err := html.Parse(resp.Body)
 	chapter := book.Chapter{
 		ChapterNumber: chapterNumber,
@@ -79,6 +80,7 @@ func (c CrimsonmagicNovelScraper) GetAvailableChapters(url string) []book.Volume
 	if err != nil {
 		return nil
 	}
+	defer response.Body.Close()
 	root, err := html.Parse(response.Body)
 	entryContent, ok := scrape.Find(root, scrape.ByClass("entry-content"))
 	if !ok {
