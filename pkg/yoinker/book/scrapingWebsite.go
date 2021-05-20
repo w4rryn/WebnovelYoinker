@@ -8,4 +8,6 @@ const (
 	CRIMSON ScrapingWebsite = "crimsonmagic"
 	//WUXIA scrapes from wuxia
 	WUXIA ScrapingWebsite = "wuxia"
+	//FULLBOOKEDTLS for fullbookedtls
+	FULLBOOKEDTLS ScrapingWebsite = "fullybookedtls"
 )
